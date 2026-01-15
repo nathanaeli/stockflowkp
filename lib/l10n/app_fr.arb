@@ -1,0 +1,529 @@
+{
+  "@@locale": "fr",
+  "appTitle": "SmartBiz",
+  "@appTitle": {
+    "description": "The title of the app displayed on the home screen"
+  },
+  "subtitle": "Gérez votre entreprise comme un pro.\nVentes • Inventaire • Clients • Rapports",
+  "@subtitle": {
+    "description": "The subtitle describing the app features"
+  },
+  "enterButton": "Entrer dans SmartBiz",
+  "@enterButton": {
+    "description": "The text on the enter button"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Label for email field"
+  },
+  "password": "Mot de passe",
+  "@password": {
+    "description": "Label for password field"
+  },
+  "login": "Connexion",
+  "@login": {
+    "description": "Login button text"
+  },
+  "enterEmail": "Entrez votre email",
+  "@enterEmail": {
+    "description": "Hint for email field"
+  },
+  "enterPassword": "Entrez votre mot de passe",
+  "@enterPassword": {
+    "description": "Hint for password field"
+  },
+  "loginFailed": "Échec de la connexion",
+  "@loginFailed": {
+    "description": "Message shown when login fails"
+  },
+  "loginSuccessful": "Connexion réussie",
+  "@loginSuccessful": {
+    "description": "Message shown when login succeeds"
+  },
+  "stockflowKP": "StockFlowKP",
+  "@stockflowKP": {
+    "description": "App brand name"
+  },
+  "winTheDream": "GAGNEZ LE RÊVE",
+  "@winTheDream": {
+    "description": "App tagline"
+  },
+  "helloOfficer": "Bonjour, {name} 👋",
+  "@helloOfficer": {
+    "description": "Greeting message for officer"
+  },
+  "readyForTasks": "Prêt pour les tâches d'aujourd'hui ?",
+  "@readyForTasks": {
+    "description": "Task readiness message"
+  },
+  "todaysSales": "Ventes d'Aujourd'hui",
+  "@todaysSales": {
+    "description": "Label for today's sales"
+  },
+  "unsynced": "Non synchronisé",
+  "@unsynced": {
+    "description": "Label for unsynced items"
+  },
+  "lowStock": "Stock Faible",
+  "@lowStock": {
+    "description": "Label for low stock items"
+  },
+  "home": "Accueil",
+  "@home": {
+    "description": "Home navigation label"
+  },
+  "analytics": "Analytique",
+  "@analytics": {
+    "description": "Analytics navigation label"
+  },
+  "products": "Produits",
+  "@products": {
+    "description": "Products navigation label"
+  },
+  "clients": "Clients",
+  "@clients": {
+    "description": "Clients navigation label"
+  },
+  "dashboard": "Tableau de bord",
+  "@dashboard": {
+    "description": "Dashboard navigation label"
+  },
+  "pendingSales": "Ventes en Attente",
+  "@pendingSales": {
+    "description": "Pending sales navigation label"
+  },
+  "checkStock": "Vérifier le Stock",
+  "@checkStock": {
+    "description": "Check stock navigation label"
+  },
+  "activityLog": "Journal d'Activité",
+  "@activityLog": {
+    "description": "Activity log navigation label"
+  },
+  "barcodeGenerator": "Générateur de Code-barres",
+  "@barcodeGenerator": {
+    "description": "Barcode generator navigation label"
+  },
+  "backupRestore": "Sauvegarde & Restauration",
+  "@backupRestore": {
+    "description": "Backup and restore navigation label"
+  },
+  "howToUse": "Comment l'utiliser",
+  "@howToUse": {
+    "description": "How to use navigation label"
+  },
+  "support": "Support",
+  "@support": {
+    "description": "Support navigation label"
+  },
+  "signOut": "Se Déconnecter",
+  "@signOut": {
+    "description": "Sign out navigation label"
+  },
+  "newSale": "Nouvelle Vente",
+  "@newSale": {
+    "description": "New sale operation label"
+  },
+  "sales": "Ventes",
+  "@sales": {
+    "description": "Sales operation label"
+  },
+  "categories": "Catégories",
+  "@categories": {
+    "description": "Categories operation label"
+  },
+  "permissions": "Permissions",
+  "@permissions": {
+    "description": "Permissions operation label"
+  },
+  "customers": "Clients",
+  "@customers": {
+    "description": "Customers operation label"
+  },
+  "myCompany": "Mon Entreprise",
+  "@myCompany": {
+    "description": "My company operation label"
+  },
+  "proforma": "Devis",
+  "@proforma": {
+    "description": "Proforma operation label"
+  },
+  "invoices": "Factures",
+  "@invoices": {
+    "description": "Invoices operation label"
+  },
+  "unsyncedData": "Données Non Synchronisées",
+  "@unsyncedData": {
+    "description": "Dialog title for unsynced data"
+  },
+  "unsyncedWarning": "Vous avez {count} éléments en attente qui n'ont pas encore été synchronisés. Vous déconnecter maintenant supprimera définitivement ces données.",
+  "@unsyncedWarning": {
+    "description": "Warning message for unsynced data"
+  },
+  "cancel": "Annuler",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "deleteSignOut": "Supprimer & Se Déconnecter",
+  "@deleteSignOut": {
+    "description": "Delete and sign out button text"
+  },
+  "syncSignOut": "Synchroniser & Se Déconnecter",
+  "@syncSignOut": {
+    "description": "Sync and sign out button text"
+  },
+  "confirmSignOut": "Êtes-vous sûr de vouloir vous déconnecter ? Toutes les données locales seront effacées.",
+  "@confirmSignOut": {
+    "description": "Sign out confirmation message"
+  },
+  "syncSuccessful": "Synchronisation réussie ! Déconnexion...",
+  "@syncSuccessful": {
+    "description": "Success message for sync"
+  },
+  "syncFailed": "Synchronisation échouée. {count} éléments restants.",
+  "@syncFailed": {
+    "description": "Failure message for sync"
+  },
+  "syncError": "Erreur de synchronisation : {error}",
+  "@syncError": {
+    "description": "Error message for sync failure"
+  },
+  "lowStockAlert": "⚠️ Alerte : {count} produits ont un stock faible !",
+  "@lowStockAlert": {
+    "description": "Low stock alert message"
+  },
+  "view": "VOIR",
+  "@view": {
+    "description": "View button text"
+  },
+  "logoutFailed": "Déconnexion échouée : {error}",
+  "@logoutFailed": {
+    "description": "Logout failure message"
+  },
+  "officer": "Agent",
+  "@officer": {
+    "description": "Default officer name"
+  },
+  "defaultEmail": "email@exemple.com",
+  "@defaultEmail": {
+    "description": "Default email placeholder"
+  },
+  "manageProducts": "Gérer les Produits",
+  "items": "articles",
+  "item": "article",
+  "searchProducts": "Rechercher des produits...",
+  "noProductsYet": "Aucun produit pour le moment",
+  "tapAddFirstProduct": "Appuyez sur + pour ajouter votre premier produit",
+  "noProductsFound": "Aucun produit trouvé",
+  "tryDifferentSearch": "Essayez un terme de recherche différent",
+  "scanProductBarcode": "Scannez le code-barres du produit pour rechercher",
+  "scan": "Scanner",
+  "addProduct": "Ajouter un Produit",
+  "local": "LOCAL",
+  "sku": "SKU",
+  "description": "Description",
+  "noDescription": "Aucune description",
+  "available": "disponible",
+  "failedToLoadProducts": "Échec du chargement des produits",
+  "productDeletedSuccessfully": "Produit supprimé avec succès",
+  "failedToDeleteProduct": "Échec de la suppression du produit",
+  "deleteProduct": "Supprimer le Produit",
+  "areYouSureDeleteProduct": "Êtes-vous sûr de vouloir supprimer \"{name}\" ? Cette action ne peut pas être annulée.",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "viewStock": "Voir le Stock",
+  "stockInfo": "Informations sur le Stock",
+  "productType": "Type de Produit",
+  "online": "En ligne",
+  "offline": "Hors ligne",
+  "bulkStock": "Stock en Gros",
+  "trackedItemsAvailable": "Articles Suivis (disponibles)",
+  "totalAvailable": "Total Disponible",
+  "close": "Fermer",
+  "couldNotLoadStockDetails": "Impossible de charger les détails du stock",
+  "addProductItem": "Ajouter un Article de Produit",
+  "debugInformation": "Informations de Débogage",
+  "debugInfoPrinted": "Les informations de débogage ont été imprimées dans la console.",
+  "checkConsoleOutput": "Vérifiez la sortie de la console pour des informations détaillées sur :",
+  "userAuthDataStructure": "Structure des données d'authentification utilisateur",
+  "tokenLocationFormat": "Emplacement et format du token",
+  "pendingProductsStatus": "Statut des produits en attente",
+  "databaseSyncState": "État de synchronisation de la base de données",
+  "informationHelpTroubleshoot": "Ces informations aideront à résoudre les problèmes de synchronisation.",
+  "ok": "OK",
+  "sort": "Trier",
+  "name": "Nom",
+  "price": "Prix",
+  "syncPendingProducts": "Synchroniser les produits en attente",
+  "syncing": "Synchronisation...",
+  "sync": "Synchroniser",
+  "debugSyncIssues": "Déboguer les problèmes de synchronisation",
+  "successfullySyncedProducts": "{count} produit{countPlural} synchronisé{countPlural} avec succès",
+  "product": "produit",
+  "products": "produits",
+  "failedToSyncProducts": "{count} produit{countPlural} a échoué à se synchroniser",
+  "noProductsToSync": "Aucun produit à synchroniser",
+  "syncFailedMessage": "Synchronisation échouée : {message}",
+  "syncErrorMessage": "Erreur de synchronisation : {error}",
+  "left": "restant",
+  "saleDetails": "Détails de la Vente",
+  "@saleDetails": {
+    "description": "Page title for sale details"
+  },
+  "itemsPurchased": "Articles Achetés",
+  "@itemsPurchased": {
+    "description": "Section title for purchased items"
+  },
+  "customer": "Client",
+  "@customer": {
+    "description": "Customer section label"
+  },
+  "refresh": "Actualiser",
+  "@refresh": {
+    "description": "Refresh button tooltip"
+  },
+  "invoice": "Facture",
+  "@invoice": {
+    "description": "Invoice button tooltip"
+  },
+  "invoiceReady": "Facture Prête",
+  "@invoiceReady": {
+    "description": "Dialog title when invoice is ready"
+  },
+  "printInvoice": "Imprimer la Facture",
+  "@printInvoice": {
+    "description": "Print invoice button text"
+  },
+  "emailInvoice": "Envoyer la Facture par Email",
+  "@emailInvoice": {
+    "description": "Email invoice button text"
+  },
+  "paid": "PAYÉ",
+  "@paid": {
+    "description": "Paid status indicator"
+  },
+  "loan": "PRÊT",
+  "@loan": {
+    "description": "Loan status indicator"
+  },
+  "subtotal": "Sous-total",
+  "@subtotal": {
+    "description": "Subtotal label"
+  },
+  "discount": "Remise",
+  "@discount": {
+    "description": "Discount label"
+  },
+  "totalAmount": "Montant Total",
+  "@totalAmount": {
+    "description": "Total amount label"
+  },
+  "errorSharingInvoice": "Erreur lors du partage de la facture",
+  "@errorSharingInvoice": {
+    "description": "Error message when sharing invoice fails"
+  },
+  "dearCustomer": "Cher Client",
+  "@dearCustomer": {
+    "description": "Email greeting"
+  },
+  "invoiceEmailBody": "Veuillez trouver ci-joint la facture de votre achat récent.\n\nMerci d'avoir acheté chez nous !",
+  "@invoiceEmailBody": {
+    "description": "Email body for invoice sharing"
+  },
+  "invoicePdfTitle": "FACTURE",
+  "@invoicePdfTitle": {
+    "description": "PDF invoice header"
+  },
+  "billTo": "Facturer à :",
+  "@billTo": {
+    "description": "PDF bill to section"
+  },
+  "itemDescription": "Description de l'Article",
+  "@itemDescription": {
+    "description": "Table header for item description"
+  },
+  "qty": "Qté",
+  "@qty": {
+    "description": "Table header for quantity"
+  },
+  "unitPrice": "Prix Unitaire",
+  "@unitPrice": {
+    "description": "Table header for unit price"
+  },
+  "total": "Total",
+  "@total": {
+    "description": "Table header for total"
+  },
+  "totalAmountPdf": "MONTANT TOTAL",
+  "@totalAmountPdf": {
+    "description": "PDF total amount label"
+  },
+  "thankYouChoosing": "Merci d'avoir choisi {company} !",
+  "@thankYouChoosing": {
+    "description": "PDF footer thank you message"
+  },
+  "generatedOn": "Généré le {date}",
+  "@generatedOn": {
+    "description": "PDF generation timestamp"
+  },
+  "tel": "Tél :",
+  "@tel": {
+    "description": "Telephone label"
+  },
+  "emailLabel": "Email :",
+  "@emailLabel": {
+    "description": "Email label"
+  },
+  "walkInCustomer": "Client Passant",
+  "@walkInCustomer": {
+    "description": "Default customer for cash sales"
+  },
+  "cashSale": "Vente Comptoir • Aucune adresse spécifique fournie",
+  "@cashSale": {
+    "description": "Description for cash sales"
+  },
+  "registeredCustomer": "Client Enregistré",
+  "@registeredCustomer": {
+    "description": "Label for registered customers"
+  },
+  "itemsCount": "{count} Articles",
+  "@itemsCount": {
+    "description": "Items count display"
+  },
+  "unknownProduct": "Produit Inconnu",
+  "@unknownProduct": {
+    "description": "Fallback for missing product names"
+  },
+  "unnamedItem": "Article Sans Nom",
+  "@unnamedItem": {
+    "description": "Fallback for unnamed items"
+  },
+  "unknown": "Inconnu",
+  "@unknown": {
+    "description": "Generic unknown label"
+  },
+  "walkInSale": "Vente Passant",
+  "@walkInSale": {
+    "description": "Walk-in sale description"
+  },
+  "salesAnalytics": "Analytique des Ventes",
+  "@salesAnalytics": {
+    "description": "Page title for sales analytics"
+  },
+  "last7DaysOverview": "Aperçu des 7 Derniers Jours",
+  "@last7DaysOverview": {
+    "description": "Analytics page subtitle"
+  },
+  "totalRevenue": "Revenus Totaux",
+  "@totalRevenue": {
+    "description": "Total revenue label"
+  },
+  "totalSales": "Ventes Totales",
+  "@totalSales": {
+    "description": "Total sales label"
+  },
+  "date": "Date",
+  "@date": {
+    "description": "Date column header"
+  },
+  "day": "Jour",
+  "@day": {
+    "description": "Day column header"
+  },
+  "salesCount": "Nombre de Ventes",
+  "@salesCount": {
+    "description": "Sales count column header"
+  },
+  "revenueTrend": "Tendance des Revenus",
+  "@revenueTrend": {
+    "description": "Revenue trend chart title"
+  },
+  "weekly": "Hebdomadaire",
+  "@weekly": {
+    "description": "Weekly period indicator"
+  },
+  "dailyBreakdown": "Répartition Quotidienne",
+  "@dailyBreakdown": {
+    "description": "Daily breakdown section title"
+  },
+  "salesByCategory": "Ventes par Catégorie",
+  "@salesByCategory": {
+    "description": "Sales by category section title"
+  },
+  "topSellingProducts": "Produits les Plus Vendus",
+  "@topSellingProducts": {
+    "description": "Top selling products section title"
+  },
+  "topProductsSelectedCategory": "Meilleurs Produits (Catégorie Sélectionnée)",
+  "@topProductsSelectedCategory": {
+    "description": "Top products for selected category"
+  },
+  "uncategorized": "Non Classé",
+  "@uncategorized": {
+    "description": "Default category name"
+  },
+  "noCategoryDataAvailable": "Aucune donnée de catégorie disponible",
+  "@noCategoryDataAvailable": {
+    "description": "Message when no category data is available"
+  },
+  "noSalesDataAvailable": "Aucune donnée de vente disponible",
+  "@noSalesDataAvailable": {
+    "description": "Message when no sales data is available"
+  },
+  "unitsSold": "unités vendues",
+  "@unitsSold": {
+    "description": "Units sold label"
+  },
+  "salesSummaryReport": "Rapport de Résumé des Ventes",
+  "@salesSummaryReport": {
+    "description": "PDF report title"
+  },
+  "last7DaysPerformance": "Performance des 7 Derniers Jours",
+  "@last7DaysPerformance": {
+    "description": "PDF performance section title"
+  },
+  "errorExportingExcel": "Erreur lors de l'exportation Excel",
+  "@errorExportingExcel": {
+    "description": "Error message for Excel export"
+  },
+  "selectRange": "Sélectionner une Plage",
+  "@selectRange": {
+    "description": "Select date range placeholder"
+  },
+  "vs": "vs",
+  "@vs": {
+    "description": "Comparison indicator"
+  },
+  "allSalesSynced": "Toutes les ventes sont synchronisées",
+  "@allSalesSynced": {
+    "description": "Message when there are no pending sales"
+  },
+  "syncNow": "Synchroniser Maintenant",
+  "@syncNow": {
+    "description": "Button text to sync individual sale"
+  },
+  "syncAll": "Tout Synchroniser",
+  "@syncAll": {
+    "description": "Button tooltip to sync all pending sales"
+  },
+  "saleSyncedSuccessfully": "Vente synchronisée avec succès",
+  "@saleSyncedSuccessfully": {
+    "description": "Success message when a sale is synced"
+  },
+  "syncFailedWithMessage": "Synchronisation échouée : {message}",
+  "@syncFailedWithMessage": {
+    "description": "Error message when sync fails with specific message"
+  },
+  "errorWithMessage": "Erreur : {error}",
+  "@errorWithMessage": {
+    "description": "General error message format"
+  },
+  "syncedCountOfTotal": "{count} sur {total} ventes synchronisées",
+  "@syncedCountOfTotal": {
+    "description": "Progress message showing sync results"
+  },
+  "notAuthenticated": "Non authentifié",
+  "@notAuthenticated": {
+    "description": "Error message when user is not authenticated"
+  }
+}

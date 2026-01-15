@@ -1,0 +1,382 @@
+{
+  "@@locale": "sw",
+  "appTitle": "StockFlowKp",
+  "@appTitle": {
+    "description": "The title of the app displayed on the home screen"
+  },
+  "subtitle": "Simamia biashara yako kama mtaalamu.\nMauzo • Hesabu • Wateja • Ripoti",
+  "@subtitle": {
+    "description": "The subtitle describing the app features"
+  },
+  "enterButton": "Ingia StockFlowKp",
+  "@enterButton": {
+    "description": "The text on the enter button"
+  },
+  "email": "Barua pepe",
+  "password": "Nenosiri",
+  "login": "Ingia",
+  "enterEmail": "Ingiza barua pepe yako",
+  "enterPassword": "Ingiza nenosiri lako",
+  "loginFailed": "Kuingia kumeshindikana",
+  "loginSuccessful": "Kuingia kufanikiwa",
+  "stockflowKP": "StockFlowKp",
+  "winTheDream": "WIN THE DREAM",
+  "helloOfficer": "Halo, {name} 👋",
+  "readyForTasks": "Je, tayari kwa kazi za leo?",
+  "todaysSales": "Mauzo ya Leo",
+  "unsynced": "Haijaunganishwa",
+  "lowStock": "Hifadhi Ndogo",
+  "home": "Nyumbani",
+  "analytics": "Takwimu",
+  "products": "Bidhaa",
+  "clients": "Wateja",
+  "dashboard": "Dashibodi",
+  "pendingSales": "Mauzo yanayosubiri",
+  "checkStock": "Angalia Hifadhi",
+  "activityLog": "Kumbukumbu ya Shughuli",
+  "barcodeGenerator": "Kichapishaji cha Barcode",
+  "backupRestore": "Hifadhi & Rudisha",
+  "howToUse": "Jinsi ya kuitumia",
+  "support": "Msaada",
+  "signOut": "Toka",
+  "newSale": "Mauzo Mapya",
+  "sales": "Mauzo",
+  "categories": "Vikundi",
+  "permissions": "Idhini",
+  "customers": "Wateja",
+  "myCompany": "Kampuni Yangu",
+  "proforma": "Proforma",
+  "invoices": "Pesi",
+  "unsyncedData": "Data Haijaunganishwa",
+  "unsyncedWarning": "Una kitu {count} kinachosubiri ambacho bakijaunganishwa. Kutoka sasa itafuta data hii kila mmoja.",
+  "cancel": "Ghairi",
+  "deleteSignOut": "Futa & Toka",
+  "syncSignOut": "Unganisha & Toka",
+  "confirmSignOut": "Je, una uhakika unataka kutoka? Data zote za ndani zitafutwa.",
+  "syncSuccessful": "Uunganishaji umefanikiwa! Kutoa...",
+  "syncFailed": "Uunganishaji umeshindikana. Vitu {count} vimebaki.",
+  "syncError": "Hitilafu ya uunganishaji: {error}",
+  "lowStockAlert": "⚠️ Onyo: Bidhaa {count} zina hifadhi ndogo!",
+  "view": "ANGALIA",
+  "logoutFailed": "Kutoa kumeshindikana: {error}",
+  "officer": "Mwanajeshi",
+  "defaultEmail": "barua.pepe@mfano.com",
+  "manageProducts": "Simamia Bidhaa",
+  "items": "vitu",
+  "item": "kitu",
+  "searchProducts": "Tafuta bidhaa...",
+  "noProductsYet": "Bado hakuna bidhaa",
+  "tapAddFirstProduct": "Gonga + kuongeza bidhaa yako ya kwanza",
+  "noProductsFound": "Hakuna bidhaa zilizopatikana",
+  "tryDifferentSearch": "Jaribu neno la utafutaji tofauti",
+  "scanProductBarcode": "Changanua barcode ya bidhaa kutafuta",
+  "scan": "Changanua",
+  "addProduct": "Ongeza Bidhaa",
+  "local": "MAELEZO",
+  "sku": "SKU",
+  "description": "Maelezo",
+  "noDescription": "Hakuna maelezo",
+  "available": "Inapatikana",
+  "failedToLoadProducts": "Kushindwa kupakia bidhaa",
+  "productDeletedSuccessfully": "Bidhaa imefutwa kwa mafanikio",
+  "failedToDeleteProduct": "Kushindwa kufuta bidhaa",
+  "deleteProduct": "Futa Bidhaa",
+  "areYouSureDeleteProduct": "Je, una uhakika unataka kufuta \"{name}\"? Hatua hii haiwezi kubadilishwa.",
+  "cancel": "Ghairi",
+  "delete": "Futa",
+  "viewStock": "Angalia Hifadhi",
+  "stockInfo": "Maelezo ya Hifadhi",
+  "productType": "Aina ya Bidhaa",
+  "online": "Mtandaoni",
+  "offline": "Nje ya mtandao",
+  "bulkStock": "Hifadhi ya Wingi",
+  "trackedItemsAvailable": "Vitu vinavyofuatwa (vinavyopatikana)",
+  "totalAvailable": "Jumla Inapatikana",
+  "close": "Funga",
+  "couldNotLoadStockDetails": "Haikuweza kupakia maelezo ya hifadhi",
+  "addProductItem": "Ongeza Kitu cha Bidhaa",
+  "debugInformation": "Maelezo ya Utatuzi",
+  "debugInfoPrinted": "Maelezo ya utatuzi yamechapishwa kwa koni.",
+  "checkConsoleOutput": "Angalia matokeo ya koni kwa maelezo ya kina kuhusu:",
+  "userAuthDataStructure": "Muundo wa data ya uthibitishaji wa mtumiaji",
+  "tokenLocationFormat": "Mahali na muundo wa tokeni",
+  "pendingProductsStatus": "Hali ya bidhaa zinazosubiri",
+  "databaseSyncState": "Hali ya uunganishaji wa hifadhidata",
+  "informationHelpTroubleshoot": "Maelezo haya yatasaidia kutatua matatizo ya uunganishaji.",
+  "ok": "Sawa",
+  "sort": "Panga",
+  "name": "Jina",
+  "price": "Bei",
+  "syncPendingProducts": "Unganisha bidhaa zinazosubiri",
+  "syncing": "Inaunganisha...",
+  "sync": "Unganisha",
+  "debugSyncIssues": "Utatuzi wa matatizo ya uunganishaji",
+  "successfullySyncedProducts": "Imefanikiwa kuunganisha bidhaa {count}",
+  "product": "bidhaa",
+  "products": "bidhaa",
+  "failedToSyncProducts": "Bidhaa {count} zimeshindikana kuunganishwa",
+  "noProductsToSync": "Hakuna bidhaa za kuunganisha",
+  "syncFailedMessage": "Uunganishaji umeshindikana: {message}",
+  "syncErrorMessage": "Hitilafu ya uunganishaji: {error}",
+  "left": "imesalia",
+  "saleDetails": "Maelezo ya Mauzo",
+  "@saleDetails": {
+    "description": "Kichwa cha ukurasa wa maelezo ya mauzo"
+  },
+  "itemsPurchased": "Vitu Vilivyotumwa",
+  "@itemsPurchased": {
+    "description": "Kichwa cha sehemu ya vitu vilivyotumwa"
+  },
+  "customer": "Mteja",
+  "@customer": {
+    "description": "Lebo ya sehemu ya mteja"
+  },
+  "refresh": "Sasisha",
+  "@refresh": {
+    "description": "Kidokezo cha kifungu cha sasisha"
+  },
+  "invoice": "Pesi",
+  "@invoice": {
+    "description": "Kidokezo cha kifungu cha pesi"
+  },
+  "invoiceReady": "Pesi Tayari",
+  "@invoiceReady": {
+    "description": "Kichwa cha mazungumzo pesi ikiwa tayari"
+  },
+  "printInvoice": "Chapisha Pesi",
+  "@printInvoice": {
+    "description": "Neno la kifungu cha chapisha pesi"
+  },
+  "emailInvoice": "Tuma Pesi Barua Pepe",
+  "@emailInvoice": {
+    "description": "Neno la kifungu cha tuma pesi barua pepe"
+  },
+  "paid": "IMALIPWA",
+  "@paid": {
+    "description": "Kiolwa cha hali ya kulipwa"
+  },
+  "loan": "MKOPO",
+  "@loan": {
+    "description": "Kiolwa cha hali ya mkopo"
+  },
+  "subtotal": "Jumla ndogo",
+  "@subtotal": {
+    "description": "Lebo ya jumla ndogo"
+  },
+  "discount": "Punguzo",
+  "@discount": {
+    "description": "Lebo ya punguzo"
+  },
+  "totalAmount": "Jumla ya Mwisho",
+  "@totalAmount": {
+    "description": "Lebo ya jumla ya mwisho"
+  },
+  "errorSharingInvoice": "Hitilafu ya kushirikisha pesi",
+  "@errorSharingInvoice": {
+    "description": "Ujumbe wa makosa unaposhindwa kushirikisha pesi"
+  },
+  "dearCustomer": "Mpendwa Mteja",
+  "@dearCustomer": {
+    "description": "Salamu ya barua pepe"
+  },
+  "invoiceEmailBody": "Tafadhali attach pesi kwa ununuzi wako wa hivi karibuni.\n\nAsante kwa kununua nasi!",
+  "@invoiceEmailBody": {
+    "description": "Mwili wa barua pepe kwa kushirikisha pesi"
+  },
+  "invoicePdfTitle": "PESI",
+  "@invoicePdfTitle": {
+    "description": "Kichwa cha PDF cha pesi"
+  },
+  "billTo": "Lipa kwa:",
+  "@billTo": {
+    "description": "Sehemu ya PDF ya lipa kwa"
+  },
+  "itemDescription": "Maelezo ya Kitu",
+  "@itemDescription": {
+    "description": "Kichwa cha jedwali la maelezo ya kitu"
+  },
+  "qty": "Idadi",
+  "@qty": {
+    "description": "Kichwa cha jedwali la idadi"
+  },
+  "unitPrice": "Bei ya Kila",
+  "@unitPrice": {
+    "description": "Kichwa cha jedwali la bei ya kila"
+  },
+  "total": "Jumla",
+  "@total": {
+    "description": "Kichwa cha jedwali la jumla"
+  },
+  "totalAmountPdf": "JUMLA YA MWISHO",
+  "@totalAmountPdf": {
+    "description": "Lebo ya PDF ya jumla ya mwisho"
+  },
+  "thankYouChoosing": "Asante kwa kuchagua {company}!",
+  "@thankYouChoosing": {
+    "description": "Ujumbe wa PDF wa shukrani mwishoni"
+  },
+  "generatedOn": "Imeundwa {date}",
+  "@generatedOn": {
+    "description": "Muhuri wa wakati wa kuunda PDF"
+  },
+  "tel": "Simu:",
+  "@tel": {
+    "description": "Lebo ya simu"
+  },
+  "emailLabel": "Barua pepe:",
+  "@emailLabel": {
+    "description": "Lebo ya barua pepe"
+  },
+  "walkInCustomer": "Mteja wa Duka",
+  "@walkInCustomer": {
+    "description": "Mteja default kwa mauzi ya fedha taslimu"
+  },
+  "cashSale": "Mauzi ya Fedha Taslimu • Hakuna anwani maalum iliyotolewa",
+  "@cashSale": {
+    "description": "Maelezo ya mauzi ya fedha taslimu"
+  },
+  "registeredCustomer": "Mteja Aliyesajiliwa",
+  "@registeredCustomer": {
+    "description": "Lebo ya wateja waliosajiliwa"
+  },
+  "itemsCount": "Vitu {count}",
+  "@itemsCount": {
+    "description": "Onyesho la idadi ya vitu"
+  },
+  "unknownProduct": "Bidhaa Isiyojulikana",
+  "@unknownProduct": {
+    "description": "Backup kwa majina ya bidhaa yaliyopotea"
+  },
+  "unnamedItem": "Kisiwa Kisicho na Jina",
+  "@unnamedItem": {
+    "description": "Backup kwa visiwa visivyo na jina"
+  },
+  "unknown": "Haijulikani",
+  "@unknown": {
+    "description": "Lebo ya jumla ya haijulikani"
+  },
+  "walkInSale": "Mauzi ya Duka",
+  "@walkInSale": {
+    "description": "Mauzi ya walk-in"
+  },
+  "salesAnalytics": "Takwimu za Mauzo",
+  "@salesAnalytics": {
+    "description": "Kichwa cha ukurasa wa takwimu za mauzo"
+  },
+  "last7DaysOverview": "Muhtasari wa Siku 7",
+  "@last7DaysOverview": {
+    "description": "Kichwa cha kifuatilia cha ukurasa wa takwimu"
+  },
+  "totalRevenue": "Jumla ya Mapato",
+  "@totalRevenue": {
+    "description": "Lebo ya jumla ya mapato"
+  },
+  "totalSales": "Jumla ya Mauzo",
+  "@totalSales": {
+    "description": "Lebo ya jumla ya mauzo"
+  },
+  "date": "Tarehe",
+  "@date": {
+    "description": "Kichwa cha safu ya tarehe"
+  },
+  "day": "Siku",
+  "@day": {
+    "description": "Kichwa cha safu ya siku"
+  },
+  "salesCount": "Idadi ya Mauzo",
+  "@salesCount": {
+    "description": "Kichwa cha safu ya idadi ya mauzo"
+  },
+  "revenueTrend": "Mwelekeo wa Mapato",
+  "@revenueTrend": {
+    "description": "Kichwa cha takwimu ya mwelekeo wa mapato"
+  },
+  "weekly": "Wiki",
+  "@weekly": {
+    "description": "Kiolwa cha kipindi cha wiki"
+  },
+  "dailyBreakdown": "Mgawanyiko wa Kila Siku",
+  "@dailyBreakdown": {
+    "description": "Kichwa cha sehemu ya mgawanyiko wa kila siku"
+  },
+  "salesByCategory": "Mauzo kwa Kikundi",
+  "@salesByCategory": {
+    "description": "Kichwa cha sehemu ya mauzo kwa kikundi"
+  },
+  "topSellingProducts": "Bidhaa Zinazouzwa Zaidi",
+  "@topSellingProducts": {
+    "description": "Kichwa cha sehemu ya bidhaa zinazouzwa zaidi"
+  },
+  "topProductsSelectedCategory": "Bidhaa zaidi (Kikundi Kilichochaguliwa)",
+  "@topProductsSelectedCategory": {
+    "description": "Bidhaa zaidi kwa kikundi kilichochaguliwa"
+  },
+  "uncategorized": "Isiyokuwa na Kikundi",
+  "@uncategorized": {
+    "description": "Jina la kikundi chake default"
+  },
+  "noCategoryDataAvailable": "Hakuna data za kikundi",
+  "@noCategoryDataAvailable": {
+    "description": "Ujumbe wakati hakuna data za kikundi"
+  },
+  "noSalesDataAvailable": "Hakuna data za mauzo",
+  "@noSalesDataAvailable": {
+    "description": "Ujumbe wakati hakuna data za mauzo"
+  },
+  "unitsSold": "vitu vimeuzwa",
+  "@unitsSold": {
+    "description": "Lebo ya vitu vilivyouzwa"
+  },
+  "salesSummaryReport": "Ripoti ya Muhtasari wa Mauzo",
+  "@salesSummaryReport": {
+    "description": "Kichwa cha ripoti ya PDF"
+  },
+  "last7DaysPerformance": "Utendaji wa Siku 7",
+  "@last7DaysPerformance": {
+    "description": "Kichwa cha sehemu ya utendaji wa PDF"
+  },
+  "errorExportingExcel": "Hitilafu ya kuuza Excel",
+  "@errorExportingExcel": {
+    "description": "Ujumbe wa makosa kwa uuzaji wa Excel"
+  },
+  "selectRange": "Chagua Kipindi",
+  "@selectRange": {
+    "description": "Placeholder ya kuchagua kipindi cha tarehe"
+  },
+  "vs": "dhidi ya",
+  "@vs": {
+    "description": "Kiolwa cha kulinganisha"
+  },
+  "allSalesSynced": "Mauzo yote yameunganishwa",
+  "@allSalesSynced": {
+    "description": "Ujumbe wakati hakuna mauzo yanayosubiri"
+  },
+  "syncNow": "Unganisha Sasa",
+  "@syncNow": {
+    "description": "Neno la kifungu cha kuunganisha mauzo binafsi"
+  },
+  "syncAll": "Unganisha Yote",
+  "@syncAll": {
+    "description": "Kidokezo cha kifungu cha kuunganisha mauzo yote yanayosubiri"
+  },
+  "saleSyncedSuccessfully": "Mauzo yameunganishwa kwa mafanikio",
+  "@saleSyncedSuccessfully": {
+    "description": "Ujumbe wa mafanikio mauzizo yanapounganishwa"
+  },
+  "syncFailedWithMessage": "Uunganishaji umeshindikana: {message}",
+  "@syncFailedWithMessage": {
+    "description": "Ujumbe wa makosa uunganishaji unaposhindikana na ujumbe maalum"
+  },
+  "errorWithMessage": "Hitilafu: {error}",
+  "@errorWithMessage": {
+    "description": "Muundo wa ujumbe wa makosa kwa ujumla"
+  },
+  "syncedCountOfTotal": "Yameunganishwa {count} kati ya {total} ya mauzo",
+  "@syncedCountOfTotal": {
+    "description": "Ujumbe wa maendeleo unaonyesha matokeo ya uunganishaji"
+  },
+  "notAuthenticated": "Haijaithibitishwa",
+  "@notAuthenticated": {
+    "description": "Ujumbe wa makosa mtumiaji akibidi athibitishe"
+  }
+}

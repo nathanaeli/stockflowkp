@@ -1,0 +1,529 @@
+{
+  "@@locale": "en",
+  "appTitle": "SmartBiz",
+  "@appTitle": {
+    "description": "The title of the app displayed on the home screen"
+  },
+  "subtitle": "Manage your business like a pro.\nSales • Inventory • Customers • Reports",
+  "@subtitle": {
+    "description": "The subtitle describing the app features"
+  },
+  "enterButton": "Enter SmartBiz",
+  "@enterButton": {
+    "description": "The text on the enter button"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Label for email field"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Label for password field"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+  "enterEmail": "Enter your email",
+  "@enterEmail": {
+    "description": "Hint for email field"
+  },
+  "enterPassword": "Enter your password",
+  "@enterPassword": {
+    "description": "Hint for password field"
+  },
+  "loginFailed": "Login failed",
+  "@loginFailed": {
+    "description": "Message shown when login fails"
+  },
+  "loginSuccessful": "Login successful",
+  "@loginSuccessful": {
+    "description": "Message shown when login succeeds"
+  },
+  "stockflowKP": "StockflowKP",
+  "@stockflowKP": {
+    "description": "App brand name"
+  },
+  "winTheDream": "WIN THE DREAM",
+  "@winTheDream": {
+    "description": "App tagline"
+  },
+  "helloOfficer": "Hello, {name} 👋",
+  "@helloOfficer": {
+    "description": "Greeting message for officer"
+  },
+  "readyForTasks": "Ready for today's tasks?",
+  "@readyForTasks": {
+    "description": "Task readiness message"
+  },
+  "todaysSales": "Today's Sales",
+  "@todaysSales": {
+    "description": "Label for today's sales"
+  },
+  "unsynced": "Unsynced",
+  "@unsynced": {
+    "description": "Label for unsynced items"
+  },
+  "lowStock": "Low Stock",
+  "@lowStock": {
+    "description": "Label for low stock items"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home navigation label"
+  },
+  "analytics": "Analytics",
+  "@analytics": {
+    "description": "Analytics navigation label"
+  },
+  "products": "Products",
+  "@products": {
+    "description": "Products navigation label"
+  },
+  "clients": "Clients",
+  "@clients": {
+    "description": "Clients navigation label"
+  },
+  "dashboard": "Dashboard",
+  "@dashboard": {
+    "description": "Dashboard navigation label"
+  },
+  "pendingSales": "Pending Sales",
+  "@pendingSales": {
+    "description": "Pending sales navigation label"
+  },
+  "checkStock": "Check Stock",
+  "@checkStock": {
+    "description": "Check stock navigation label"
+  },
+  "activityLog": "Activity Log",
+  "@activityLog": {
+    "description": "Activity log navigation label"
+  },
+  "barcodeGenerator": "Barcode Generator",
+  "@barcodeGenerator": {
+    "description": "Barcode generator navigation label"
+  },
+  "backupRestore": "Backup & Restore",
+  "@backupRestore": {
+    "description": "Backup and restore navigation label"
+  },
+  "howToUse": "How to use it",
+  "@howToUse": {
+    "description": "How to use navigation label"
+  },
+  "support": "Support",
+  "@support": {
+    "description": "Support navigation label"
+  },
+  "signOut": "Sign Out",
+  "@signOut": {
+    "description": "Sign out navigation label"
+  },
+  "newSale": "New Sale",
+  "@newSale": {
+    "description": "New sale operation label"
+  },
+  "sales": "Sales",
+  "@sales": {
+    "description": "Sales operation label"
+  },
+  "categories": "Categories",
+  "@categories": {
+    "description": "Categories operation label"
+  },
+  "permissions": "Permissions",
+  "@permissions": {
+    "description": "Permissions operation label"
+  },
+  "customers": "Customers",
+  "@customers": {
+    "description": "Customers operation label"
+  },
+  "myCompany": "My Company",
+  "@myCompany": {
+    "description": "My company operation label"
+  },
+  "proforma": "Proforma",
+  "@proforma": {
+    "description": "Proforma operation label"
+  },
+  "invoices": "Invoices",
+  "@invoices": {
+    "description": "Invoices operation label"
+  },
+  "unsyncedData": "Unsynced Data",
+  "@unsyncedData": {
+    "description": "Dialog title for unsynced data"
+  },
+  "unsyncedWarning": "You have {count} pending items that haven't been synced yet. Signing out now will delete this data permanently.",
+  "@unsyncedWarning": {
+    "description": "Warning message for unsynced data"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "deleteSignOut": "Delete & Sign Out",
+  "@deleteSignOut": {
+    "description": "Delete and sign out button text"
+  },
+  "syncSignOut": "Sync & Sign Out",
+  "@syncSignOut": {
+    "description": "Sync and sign out button text"
+  },
+  "confirmSignOut": "Are you sure you want to sign out? All local data will be cleared.",
+  "@confirmSignOut": {
+    "description": "Sign out confirmation message"
+  },
+  "syncSuccessful": "Sync successful! Signing out...",
+  "@syncSuccessful": {
+    "description": "Success message for sync"
+  },
+  "syncFailed": "Sync failed. {count} items remaining.",
+  "@syncFailed": {
+    "description": "Failure message for sync"
+  },
+  "syncError": "Sync error: {error}",
+  "@syncError": {
+    "description": "Error message for sync failure"
+  },
+  "lowStockAlert": "⚠️ Alert: {count} products are low on stock!",
+  "@lowStockAlert": {
+    "description": "Low stock alert message"
+  },
+  "view": "VIEW",
+  "@view": {
+    "description": "View button text"
+  },
+  "logoutFailed": "Logout failed: {error}",
+  "@logoutFailed": {
+    "description": "Logout failure message"
+  },
+  "officer": "Officer",
+  "@officer": {
+    "description": "Default officer name"
+  },
+  "defaultEmail": "email@example.com",
+  "@defaultEmail": {
+    "description": "Default email placeholder"
+  },
+  "manageProducts": "Manage Products",
+  "items": "items",
+  "item": "item",
+  "searchProducts": "Search products...",
+  "noProductsYet": "No products yet",
+  "tapAddFirstProduct": "Tap + to add your first product",
+  "noProductsFound": "No products found",
+  "tryDifferentSearch": "Try a different search term",
+  "scanProductBarcode": "Scan product barcode to search",
+  "scan": "Scan",
+  "addProduct": "Add Product",
+  "local": "LOCAL",
+  "sku": "SKU",
+  "description": "Description",
+  "noDescription": "No description",
+  "available": "available",
+  "failedToLoadProducts": "Failed to load products",
+  "productDeletedSuccessfully": "Product deleted successfully",
+  "failedToDeleteProduct": "Failed to delete product",
+  "deleteProduct": "Delete Product",
+  "areYouSureDeleteProduct": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "viewStock": "View Stock",
+  "stockInfo": "Stock Info",
+  "productType": "Product Type",
+  "online": "Online",
+  "offline": "Offline",
+  "bulkStock": "Bulk Stock",
+  "trackedItemsAvailable": "Tracked Items (available)",
+  "totalAvailable": "Total Available",
+  "close": "Close",
+  "couldNotLoadStockDetails": "Could not load stock details",
+  "addProductItem": "Add Product Item",
+  "debugInformation": "Debug Information",
+  "debugInfoPrinted": "Debug information has been printed to the console.",
+  "checkConsoleOutput": "Check the console output for detailed information about:",
+  "userAuthDataStructure": "User authentication data structure",
+  "tokenLocationFormat": "Token location and format",
+  "pendingProductsStatus": "Pending products status",
+  "databaseSyncState": "Database synchronization state",
+  "informationHelpTroubleshoot": "This information will help troubleshoot sync issues.",
+  "ok": "OK",
+  "sort": "Sort",
+  "name": "Name",
+  "price": "Price",
+  "syncPendingProducts": "Sync pending products",
+  "syncing": "Syncing...",
+  "sync": "Sync",
+  "debugSyncIssues": "Debug sync issues",
+  "successfullySyncedProducts": "Successfully synced {count} product{countPlural}",
+  "product": "product",
+  "products": "products",
+  "failedToSyncProducts": "{count} product{countPlural} failed to sync",
+  "noProductsToSync": "No products to sync",
+  "syncFailedMessage": "Sync failed: {message}",
+  "syncErrorMessage": "Sync error: {error}",
+  "left": "left",
+  "saleDetails": "Sale Details",
+  "@saleDetails": {
+    "description": "Page title for sale details"
+  },
+  "itemsPurchased": "Items Purchased",
+  "@itemsPurchased": {
+    "description": "Section title for purchased items"
+  },
+  "customer": "Customer",
+  "@customer": {
+    "description": "Customer section label"
+  },
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Refresh button tooltip"
+  },
+  "invoice": "Invoice",
+  "@invoice": {
+    "description": "Invoice button tooltip"
+  },
+  "invoiceReady": "Invoice Ready",
+  "@invoiceReady": {
+    "description": "Dialog title when invoice is ready"
+  },
+  "printInvoice": "Print Invoice",
+  "@printInvoice": {
+    "description": "Print invoice button text"
+  },
+  "emailInvoice": "Email Invoice",
+  "@emailInvoice": {
+    "description": "Email invoice button text"
+  },
+  "paid": "PAID",
+  "@paid": {
+    "description": "Paid status indicator"
+  },
+  "loan": "LOAN",
+  "@loan": {
+    "description": "Loan status indicator"
+  },
+  "subtotal": "Subtotal",
+  "@subtotal": {
+    "description": "Subtotal label"
+  },
+  "discount": "Discount",
+  "@discount": {
+    "description": "Discount label"
+  },
+  "totalAmount": "Total Amount",
+  "@totalAmount": {
+    "description": "Total amount label"
+  },
+  "errorSharingInvoice": "Error sharing invoice",
+  "@errorSharingInvoice": {
+    "description": "Error message when sharing invoice fails"
+  },
+  "dearCustomer": "Dear Customer",
+  "@dearCustomer": {
+    "description": "Email greeting"
+  },
+  "invoiceEmailBody": "Please find attached the invoice for your recent purchase.\n\nThank you for shopping with us!",
+  "@invoiceEmailBody": {
+    "description": "Email body for invoice sharing"
+  },
+  "invoicePdfTitle": "INVOICE",
+  "@invoicePdfTitle": {
+    "description": "PDF invoice header"
+  },
+  "billTo": "Bill To:",
+  "@billTo": {
+    "description": "PDF bill to section"
+  },
+  "itemDescription": "Item Description",
+  "@itemDescription": {
+    "description": "Table header for item description"
+  },
+  "qty": "Qty",
+  "@qty": {
+    "description": "Table header for quantity"
+  },
+  "unitPrice": "Unit Price",
+  "@unitPrice": {
+    "description": "Table header for unit price"
+  },
+  "total": "Total",
+  "@total": {
+    "description": "Table header for total"
+  },
+  "totalAmountPdf": "TOTAL AMOUNT",
+  "@totalAmountPdf": {
+    "description": "PDF total amount label"
+  },
+  "thankYouChoosing": "Thank you for choosing {company}!",
+  "@thankYouChoosing": {
+    "description": "PDF footer thank you message"
+  },
+  "generatedOn": "Generated on {date}",
+  "@generatedOn": {
+    "description": "PDF generation timestamp"
+  },
+  "tel": "Tel:",
+  "@tel": {
+    "description": "Telephone label"
+  },
+  "emailLabel": "Email:",
+  "@emailLabel": {
+    "description": "Email label"
+  },
+  "walkInCustomer": "Walk-in Customer",
+  "@walkInCustomer": {
+    "description": "Default customer for cash sales"
+  },
+  "cashSale": "Cash Sale • No specific address provided",
+  "@cashSale": {
+    "description": "Description for cash sales"
+  },
+  "registeredCustomer": "Registered Customer",
+  "@registeredCustomer": {
+    "description": "Label for registered customers"
+  },
+  "itemsCount": "{count} Items",
+  "@itemsCount": {
+    "description": "Items count display"
+  },
+  "unknownProduct": "Unknown Product",
+  "@unknownProduct": {
+    "description": "Fallback for missing product names"
+  },
+  "unnamedItem": "Unnamed Item",
+  "@unnamedItem": {
+    "description": "Fallback for unnamed items"
+  },
+  "unknown": "Unknown",
+  "@unknown": {
+    "description": "Generic unknown label"
+  },
+  "walkInSale": "Walk-in Sale",
+  "@walkInSale": {
+    "description": "Walk-in sale description"
+  },
+  "salesAnalytics": "Sales Analytics",
+  "@salesAnalytics": {
+    "description": "Page title for sales analytics"
+  },
+  "last7DaysOverview": "Last 7 Days Overview",
+  "@last7DaysOverview": {
+    "description": "Analytics page subtitle"
+  },
+  "totalRevenue": "Total Revenue",
+  "@totalRevenue": {
+    "description": "Total revenue label"
+  },
+  "totalSales": "Total Sales",
+  "@totalSales": {
+    "description": "Total sales label"
+  },
+  "date": "Date",
+  "@date": {
+    "description": "Date column header"
+  },
+  "day": "Day",
+  "@day": {
+    "description": "Day column header"
+  },
+  "salesCount": "Sales Count",
+  "@salesCount": {
+    "description": "Sales count column header"
+  },
+  "revenueTrend": "Revenue Trend",
+  "@revenueTrend": {
+    "description": "Revenue trend chart title"
+  },
+  "weekly": "Weekly",
+  "@weekly": {
+    "description": "Weekly period indicator"
+  },
+  "dailyBreakdown": "Daily Breakdown",
+  "@dailyBreakdown": {
+    "description": "Daily breakdown section title"
+  },
+  "salesByCategory": "Sales by Category",
+  "@salesByCategory": {
+    "description": "Sales by category section title"
+  },
+  "topSellingProducts": "Top Selling Products",
+  "@topSellingProducts": {
+    "description": "Top selling products section title"
+  },
+  "topProductsSelectedCategory": "Top Products (Selected Category)",
+  "@topProductsSelectedCategory": {
+    "description": "Top products for selected category"
+  },
+  "uncategorized": "Uncategorized",
+  "@uncategorized": {
+    "description": "Default category name"
+  },
+  "noCategoryDataAvailable": "No category data available",
+  "@noCategoryDataAvailable": {
+    "description": "Message when no category data is available"
+  },
+  "noSalesDataAvailable": "No sales data available",
+  "@noSalesDataAvailable": {
+    "description": "Message when no sales data is available"
+  },
+  "unitsSold": "units sold",
+  "@unitsSold": {
+    "description": "Units sold label"
+  },
+  "salesSummaryReport": "Sales Summary Report",
+  "@salesSummaryReport": {
+    "description": "PDF report title"
+  },
+  "last7DaysPerformance": "Last 7 Days Performance",
+  "@last7DaysPerformance": {
+    "description": "PDF performance section title"
+  },
+  "errorExportingExcel": "Error exporting Excel",
+  "@errorExportingExcel": {
+    "description": "Error message for Excel export"
+  },
+  "selectRange": "Select Range",
+  "@selectRange": {
+    "description": "Select date range placeholder"
+  },
+  "vs": "vs",
+  "@vs": {
+    "description": "Comparison indicator"
+  },
+  "allSalesSynced": "All sales are synced",
+  "@allSalesSynced": {
+    "description": "Message when there are no pending sales"
+  },
+  "syncNow": "Sync Now",
+  "@syncNow": {
+    "description": "Button text to sync individual sale"
+  },
+  "syncAll": "Sync All",
+  "@syncAll": {
+    "description": "Button tooltip to sync all pending sales"
+  },
+  "saleSyncedSuccessfully": "Sale synced successfully",
+  "@saleSyncedSuccessfully": {
+    "description": "Success message when a sale is synced"
+  },
+  "syncFailedWithMessage": "Sync failed: {message}",
+  "@syncFailedWithMessage": {
+    "description": "Error message when sync fails with specific message"
+  },
+  "errorWithMessage": "Error: {error}",
+  "@errorWithMessage": {
+    "description": "General error message format"
+  },
+  "syncedCountOfTotal": "Synced {count} of {total} sales",
+  "@syncedCountOfTotal": {
+    "description": "Progress message showing sync results"
+  },
+  "notAuthenticated": "Not authenticated",
+  "@notAuthenticated": {
+    "description": "Error message when user is not authenticated"
+  }
+}
