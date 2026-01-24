@@ -45,6 +45,7 @@ dependencies:
   path: ^1.9.1
   permission_handler: ^12.0.1
   qr_code_scanner: ^1.0.1
+  uuid: ^4.3.3
 
   fl_chart: ^0.66.2
   csv: ^6.0.0
@@ -55,7 +56,6 @@ dependencies:
   excel: ^4.0.6
   open_file: ^3.3.2
   barcode_widget: ^2.0.4
-  uuid: ^4.4.0
   local_auth: ^2.3.0
   connectivity_plus: ^6.0.3
   url_launcher: ^6.3.2
@@ -63,6 +63,8 @@ dependencies:
   flutter_email_sender: ^6.0.3
   cached_network_image: ^3.4.1
   provider: ^6.1.2
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:

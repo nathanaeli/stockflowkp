@@ -26,10 +26,18 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.customer?['name'] ?? '');
-    _emailController = TextEditingController(text: widget.customer?['email'] ?? '');
-    _phoneController = TextEditingController(text: widget.customer?['phone'] ?? '');
-    _addressController = TextEditingController(text: widget.customer?['address'] ?? '');
+    _nameController = TextEditingController(
+      text: widget.customer?['name'] ?? '',
+    );
+    _emailController = TextEditingController(
+      text: widget.customer?['email'] ?? '',
+    );
+    _phoneController = TextEditingController(
+      text: widget.customer?['phone'] ?? '',
+    );
+    _addressController = TextEditingController(
+      text: widget.customer?['address'] ?? '',
+    );
     _status = widget.customer?['status'] ?? 'active';
   }
 
@@ -53,34 +61,34 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
       final syncService = SyncService();
       final token = await syncService.getAuthToken();
 
-      // Get officer's duka_id if creating new
-      int? dukaId;
+      // Resolve Duka ID
+      // If we are editing, use existing duka_id.
+      // If creating, try to find an assigned duka from local DB to attach to the customer.
+      int? dukaId = widget.customer?['duka_id'];
+
       if (widget.customer == null) {
-        final userData = await dbService.getUserData();
-        // Assuming first duka assignment for now, or null if not found
-        // In a real app, you might want a dropdown if officer has multiple dukas
-        // For now we'll let the backend handle it or send null if not strictly required by local DB
-        // But API says "Must be officer's assigned duka".
-        // We can try to find it from local 'officer' table
-        final officerData = await dbService.database.then((db) => db.query('officer'));
-        if (officerData.isNotEmpty) {
-           // The officer table has tenant_id, but duka_id might be in assignments or inferred
-           // For this implementation, we'll send duka_id if we have it in the customer object (editing)
-           // or try to get it from a default source.
-           // If we can't find it, we'll omit it and hope backend infers or we'll update logic later.
-           // Based on previous code, we used _getDefaultDukaId in SyncService.
-           // For simplicity here, we'll proceed without explicit duka_id for new customers 
-           // unless we want to query it.
+        final db = await dbService.database;
+        final dukas = await db.query('dukas');
+        if (dukas.isNotEmpty) {
+          // Use the first assigned duka's server_id
+          dukaId = dukas.first['server_id'] as int?;
         }
-      } else {
-        dukaId = widget.customer?['duka_id'];
       }
 
       final customerData = {
         'name': _nameController.text.trim(),
-        'email': _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
-        'phone': _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-        'address': _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+        'email':
+            _emailController.text.trim().isEmpty
+                ? null
+                : _emailController.text.trim(),
+        'phone':
+            _phoneController.text.trim().isEmpty
+                ? null
+                : _phoneController.text.trim(),
+        'address':
+            _addressController.text.trim().isEmpty
+                ? null
+                : _addressController.text.trim(),
         'status': _status,
         if (dukaId != null) 'duka_id': dukaId,
       };
@@ -88,45 +96,63 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
       bool apiSuccess = false;
       int? newServerId;
 
-      // 1. Try API if online
+      // 1. Try API if online (Send Direct to Server)
       if (token != null) {
         try {
-          if (widget.customer != null && widget.customer!['server_id'] != null) {
-            await apiService.updateCustomer(widget.customer!['server_id'], customerData, token);
+          if (widget.customer != null &&
+              widget.customer!['server_id'] != null) {
+            // Update existing synced customer
+            await apiService.updateCustomer(
+              widget.customer!['server_id'],
+              customerData,
+              token,
+            );
             apiSuccess = true;
-          } else if (widget.customer == null) {
-            // For creation, we might need duka_id. 
-            // If API fails due to missing duka_id, user will get feedback.
-            // Ideally we fetch a default duka_id here.
-            // Let's try to fetch a default duka ID from DB just in case
-            final db = await dbService.database;
-            final dukas = await db.query('dukas');
-            if (dukas.isNotEmpty && !customerData.containsKey('duka_id')) {
-               customerData['duka_id'] = dukas.first['server_id'];
-            }
-            
-            final response = await apiService.createCustomer(customerData, token);
+          } else {
+            // Create new customer OR Sync pending customer (exists locally but not on server)
+            final response = await apiService.createCustomer(
+              customerData,
+              token,
+            );
             if (response['success'] == true) {
               newServerId = response['data']['customer']['id'];
               apiSuccess = true;
             }
           }
         } catch (e) {
-          print('API operation failed: $e');
+          debugPrint('API operation failed: $e');
         }
       }
 
-      // 2. Save Locally
+      // 2. Save/Update Locally
       if (widget.customer != null) {
-        await dbService.updateCustomer(widget.customer!['local_id'], {
+        // Updating existing local record
+        final updateData = {
           ...customerData,
-          'sync_status': apiSuccess ? DatabaseService.statusSynced : DatabaseService.statusPending,
-        });
+          'sync_status':
+              apiSuccess
+                  ? DatabaseService.statusSynced
+                  : DatabaseService.statusPending,
+        };
+
+        // If we just synced a previously pending customer, update its server_id
+        if (newServerId != null) {
+          updateData['server_id'] = newServerId;
+        }
+
+        await dbService.updateCustomer(
+          widget.customer!['local_id'],
+          updateData,
+        );
       } else {
+        // Creating new local record
         final id = await dbService.createCustomer({
           ...customerData,
           'server_id': newServerId,
-          'sync_status': apiSuccess ? DatabaseService.statusSynced : DatabaseService.statusPending,
+          'sync_status':
+              apiSuccess
+                  ? DatabaseService.statusSynced
+                  : DatabaseService.statusPending,
         });
         if (apiSuccess && newServerId != null) {
           await dbService.updateCustomerServerId(id, newServerId);
@@ -136,7 +162,11 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(apiSuccess ? 'Customer saved successfully' : 'Saved locally. Will sync when online.'),
+            content: Text(
+              apiSuccess
+                  ? 'Customer saved successfully'
+                  : 'Saved locally. Will sync when online.',
+            ),
             backgroundColor: apiSuccess ? Colors.green : Colors.orange,
           ),
         );
@@ -162,12 +192,18 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           isEditing ? 'Edit Customer' : 'New Customer',
-          style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold),
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Container(
@@ -185,11 +221,86 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  _buildTextField(_nameController, 'Name *', validator: (v) => v?.isEmpty ?? true ? 'Required' : null),
+                  if (widget.customer != null &&
+                      (widget.customer!['sync_status'] == 0 ||
+                          widget.customer!['sync_status'] ==
+                              DatabaseService.statusPending))
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 24),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.15),
+                        border: Border.all(
+                          color: Colors.orange.withOpacity(0.5),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.cloud_off_rounded,
+                            color: Colors.orange,
+                            size: 28,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Not Synced',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Locally saved. Sync to backend.',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.orange.withOpacity(0.8),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _saveCustomer,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                            ),
+                            child: const Text('Sync Now'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  _buildTextField(
+                    _nameController,
+                    'Name *',
+                    validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+                  ),
                   const SizedBox(height: 16),
-                  _buildTextField(_emailController, 'Email', keyboardType: TextInputType.emailAddress),
+                  _buildTextField(
+                    _emailController,
+                    'Email',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
                   const SizedBox(height: 16),
-                  _buildTextField(_phoneController, 'Phone', keyboardType: TextInputType.phone),
+                  _buildTextField(
+                    _phoneController,
+                    'Phone',
+                    keyboardType: TextInputType.phone,
+                  ),
                   const SizedBox(height: 16),
                   _buildTextField(_addressController, 'Address', maxLines: 3),
                   const SizedBox(height: 24),
@@ -200,11 +311,23 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
                       onPressed: _isLoading ? null : _saveCustomer,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4BB4FF),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text('Save Customer', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                      child:
+                          _isLoading
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : Text(
+                                'Save Customer',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                     ),
                   ),
                 ],
@@ -216,7 +339,13 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {int maxLines = 1, TextInputType? keyboardType, String? Function(String?)? validator}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
@@ -229,7 +358,10 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
         filled: true,
         fillColor: Colors.white.withOpacity(0.05),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
       ),
     );
   }

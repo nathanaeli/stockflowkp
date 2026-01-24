@@ -45,12 +45,26 @@ class _SalesManagementPageState extends State<SalesManagementPage> {
     setState(() {
       if (_filterStatus == 'All') {
         _filteredSales = List.from(_allSales);
+      } else if (_filterStatus == 'Paid') {
+        // Show sales that are NOT loans OR are loans that are fully paid
+        _filteredSales =
+            _allSales.where((sale) {
+              final isLoan = sale['is_loan'] == 1 || sale['is_loan'] == true;
+              final paymentStatus =
+                  sale['payment_status']?.toString().toLowerCase();
+              return !isLoan || (isLoan && paymentStatus == 'paid');
+            }).toList();
       } else {
+        // Loan / Unpaid
         final bool showLoans = _filterStatus == 'Loan';
         _filteredSales =
             _allSales.where((sale) {
               final isLoan = sale['is_loan'] == 1 || sale['is_loan'] == true;
-              return isLoan == showLoans;
+              final paymentStatus =
+                  sale['payment_status']?.toString().toLowerCase();
+              final isPending = paymentStatus != 'paid';
+              // If filter is Loan, show actual outstanding loans (is_loan AND not fully paid)
+              return isLoan && isPending;
             }).toList();
       }
     });
@@ -60,15 +74,43 @@ class _SalesManagementPageState extends State<SalesManagementPage> {
     try {
       final token = await SyncService().getAuthToken();
       if (token != null) {
-        final response = await ApiService().getSales(token);
-        if (response['success'] == true && response['data'] != null) {
-          final sales = response['data']['sales'] as List;
-          await DatabaseService().saveSales(sales);
-          _loadSales();
+        int page = 1;
+        bool hasMorePages = true;
+
+        while (hasMorePages) {
+          final response = await ApiService().getSales(
+            token,
+            filters: {'page': page, 'per_page': 50},
+          );
+
+          if (response['success'] == true && response['data'] != null) {
+            final data = response['data'];
+            final sales = data['sales'] as List;
+
+            if (sales.isEmpty) {
+              hasMorePages = false;
+              break;
+            }
+
+            await DatabaseService().saveSales(sales);
+
+            // Check pagination metadata
+            final pagination =
+                data['pagination']; // Assuming standard Laravel pagination structure if available at root, or check next_page_url
+            // Fallback if pagination metadata isn't structured exactly as expected, rely on sales count
+            if (sales.length < 50) {
+              hasMorePages = false;
+            } else {
+              page++;
+            }
+          } else {
+            hasMorePages = false;
+          }
         }
+        _loadSales();
       }
     } catch (e) {
-      print('Sales sync failed: $e');
+      debugPrint('Sales sync failed: $e');
     }
   }
 
@@ -124,14 +166,14 @@ class _SalesManagementPageState extends State<SalesManagementPage> {
                   const PopupMenuItem(
                     value: 'Paid',
                     child: Text(
-                      'Paid Only',
+                      'Paid / Cash',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
                   const PopupMenuItem(
                     value: 'Loan',
                     child: Text(
-                      'Loans Only',
+                      'Unpaid Loans',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

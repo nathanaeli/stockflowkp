@@ -560,4 +560,139 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notAuthenticated => 'Not authenticated';
+
+  @override
+  String get financialOverview => 'Financial Overview';
+
+  @override
+  String get estProfit => 'Est. Profit';
+
+  @override
+  String get expenses => 'Expenses';
+
+  @override
+  String get netIncome => 'Net Income';
+
+  @override
+  String get businessInventory => 'Business & Inventory';
+
+  @override
+  String get totalProducts => 'Total Products';
+
+  @override
+  String get accountBalance => 'Account Balance';
+
+  @override
+  String get stockValueCost => 'Stock Value (Cost)';
+
+  @override
+  String get todaysPerformanceByShop => 'Today\'s Performance by Shop';
+
+  @override
+  String get allShops => 'All Shops';
+
+  @override
+  String get tenantName => 'Tenant Name';
+
+  @override
+  String get role => 'Role';
+
+  @override
+  String get joined => 'Joined';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get myShops => 'My Shops';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get serverSync => 'Server Sync';
+
+  @override
+  String get todaySales => 'Today Sales';
+
+  @override
+  String get todayProfit => 'Today Profit';
+
+  @override
+  String get shopSettings => 'Shop Settings';
+
+  @override
+  String get viewFullReport => 'View Full Report';
+
+  @override
+  String get management => 'Management';
+
+  @override
+  String get performanceToday => 'Performance Today';
+
+  @override
+  String get stockCount => 'Stock Count';
+
+  @override
+  String get created => 'Created At';
+
+  @override
+  String get noShopActivity => 'No shop activity recorded today';
+
+  @override
+  String get retryConnection => 'Retry Connection';
+
+  @override
+  String get somethingWentWrong => 'Something went wrong';
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String get inventory => 'Inventory';
+
+  @override
+  String get refreshInventory => 'Refresh Inventory';
+
+  @override
+  String get costPrice => 'Cost Price';
+
+  @override
+  String get sellingPrice => 'Selling Price';
+
+  @override
+  String get margin => 'MARGIN';
+
+  @override
+  String get waitingForSync => 'Waiting for sync...';
+
+  @override
+  String get noLocalProductsFound => 'No Local Products Found';
+
+  @override
+  String get addProductsOrSync => 'Add products or sync from server';
+
+  @override
+  String get profitAndLoss => 'Profit & Loss';
+
+  @override
+  String get manageOfficers => 'Manage Officers';
+
+  @override
+  String get productCategories => 'Product Categories';
+
+  @override
+  String get transactionsReport => 'Transactions Report';
+
+  @override
+  String get inventoryAndAging => 'Inventory & Aging';
+
+  @override
+  String get registerNewShop => 'Register New Shop';
+
+  @override
+  String get featureComingSoon => 'Feature coming soon';
 }

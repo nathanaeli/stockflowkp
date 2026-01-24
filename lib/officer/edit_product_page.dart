@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stockflowkp/services/api_service.dart';
+import 'package:stockflowkp/services/sync_service.dart';
 import 'package:stockflowkp/services/database_service.dart';
+
 import 'package:stockflowkp/utils/image_utils.dart';
 import 'package:stockflowkp/utils/qr_scanner.dart';
 
@@ -23,8 +26,24 @@ class _EditProductPageState extends State<EditProductPage> {
   late final TextEditingController _skuController;
 
   final List<String> _units = [
-    'PCS', 'KG', 'LTR', 'MTR', 'BOX', 'PACK', 'BAG', 'CAN', 'BTL', 'ROLL',
-    'SHEET', 'TUBE', 'PAIR', 'SET', 'DOZEN', 'BUNDLE', 'CARTON', 'CASE'
+    'PCS',
+    'KG',
+    'LTR',
+    'MTR',
+    'BOX',
+    'PACK',
+    'BAG',
+    'CAN',
+    'BTL',
+    'ROLL',
+    'SHEET',
+    'TUBE',
+    'PAIR',
+    'SET',
+    'DOZEN',
+    'BUNDLE',
+    'CARTON',
+    'CASE',
   ];
   late String _selectedUnit;
   late bool _isActive;
@@ -41,16 +60,28 @@ class _EditProductPageState extends State<EditProductPage> {
 
   void _initializeControllers() {
     _nameController = TextEditingController(text: widget.product['name'] ?? '');
-    _descriptionController = TextEditingController(text: widget.product['description'] ?? '');
-    _basePriceController = TextEditingController(text: (widget.product['base_price'] ?? 0).toString());
-    _sellingPriceController = TextEditingController(text: (widget.product['selling_price'] ?? 0).toString());
+    _descriptionController = TextEditingController(
+      text: widget.product['description'] ?? '',
+    );
+    _basePriceController = TextEditingController(
+      text: (widget.product['base_price'] ?? 0).toString(),
+    );
+    _sellingPriceController = TextEditingController(
+      text: (widget.product['selling_price'] ?? 0).toString(),
+    );
     _skuController = TextEditingController(text: widget.product['sku'] ?? '');
-    
+
     // Ensure the unit from the product exists in our list, default to 'PCS' if not
-    final productUnit = widget.product['unit']?.toString().toUpperCase() ?? 'PCS';
+    final productUnit =
+        widget.product['unit']?.toString().toUpperCase() ?? 'PCS';
     _selectedUnit = _units.contains(productUnit) ? productUnit : 'PCS';
-    
-    _isActive = (widget.product['is_active'] ?? 1) == 1;
+
+    final rawActive = widget.product['is_active'];
+    _isActive =
+        rawActive == 1 ||
+        rawActive == true ||
+        rawActive == '1' ||
+        rawActive == 'true';
     _qrCodeData = widget.product['barcode'];
   }
 
@@ -92,15 +123,16 @@ class _EditProductPageState extends State<EditProductPage> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QRCodeScanner(
-          onQRCodeScanned: (code) {
-            setState(() {
-              _qrCodeData = code;
-            });
-            Navigator.pop(context);
-          },
-          initialMessage: 'Scan the product\'s QR code to update',
-        ),
+        builder:
+            (context) => QRCodeScanner(
+              onQRCodeScanned: (code) {
+                setState(() {
+                  _qrCodeData = code;
+                });
+                Navigator.pop(context);
+              },
+              initialMessage: 'Scan the product\'s QR code to update',
+            ),
       ),
     );
   }
@@ -111,42 +143,100 @@ class _EditProductPageState extends State<EditProductPage> {
     setState(() => _isLoading = true);
 
     try {
+      final syncService = SyncService();
+      final token = await syncService.getAuthToken();
+
+      // Resolve Server ID (can be 'id' or 'server_id' depending on source table)
+      final int? serverId =
+          (widget.product['server_id'] as int?) ??
+          (widget.product['id'] as int?);
+
+      // Resolve Local ID for local updates
+      final dynamic localId = widget.product['local_id'];
+
+      final Map<String, dynamic> updatedData = {
+        'name': _nameController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'unit': _selectedUnit,
+        'buying_price':
+            double.tryParse(_basePriceController.text.replaceAll(',', '')) ??
+            0.0,
+        'selling_price':
+            double.tryParse(_sellingPriceController.text.replaceAll(',', '')) ??
+            0.0,
+        'is_active': _isActive ? 1 : 0,
+      };
+
+      if (_qrCodeData != null && _qrCodeData!.isNotEmpty) {
+        updatedData['barcode'] = _qrCodeData;
+      }
+
+      // 1. UPDATE SERVER (if synced)
+      if (serverId != null) {
+        if (token == null) {
+          throw Exception('Authentication token not found. Please sync first.');
+        }
+        final apiService = ApiService();
+        await apiService.updateProduct(
+          serverId,
+          updatedData,
+          _selectedImage,
+          token,
+        );
+      }
+
+      // 2. UPDATE LOCAL DATABASE
+      // Determine which table the product came from based on local_id type
+      // int -> products table (local/active)
+      // String -> productsinfo table (server cache)
       final dbService = DatabaseService();
       final db = await dbService.database;
 
-      String? imagePath = widget.product['image']; // Keep existing
-      if (_selectedImage != null) {
-        final imageBytes = await _selectedImage!.readAsBytes();
-        final fileName = ImageUtils().generateImageFileName(_nameController.text.trim());
-        imagePath = await ImageUtils().saveImageToStorage(imageBytes, fileName);
-      }
-
-      final updatedData = {
-        'name': _nameController.text.trim(),
-        'description': _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        'unit': _selectedUnit,
-        'base_price': double.tryParse(_basePriceController.text.replaceAll(',', '')) ?? 0.0,
-        'selling_price': double.tryParse(_sellingPriceController.text.replaceAll(',', '')) ?? 0.0,
-        'is_active': _isActive ? 1 : 0,
-        'image': imagePath,
-        'barcode': _qrCodeData,
+      final Map<String, dynamic> localUpdateData = {
+        'name': updatedData['name'],
+        'description': updatedData['description'],
+        'unit': updatedData['unit'],
+        'base_price':
+            updatedData['buying_price'], // Note: local schema uses base_price
+        'selling_price': updatedData['selling_price'],
+        'is_active': updatedData['is_active'],
+        'barcode': updatedData['barcode'] ?? widget.product['barcode'],
         'updated_at': DateTime.now().toIso8601String(),
-        'sync_status': DatabaseService.statusPending,
+        // If image was selected, we might want to save path, but keeping simple for now
+        if (_selectedImage != null) 'image': _selectedImage!.path,
       };
 
-      await db.update(
-        'products',
-        updatedData,
-        where: 'local_id = ?',
-        whereArgs: [widget.product['local_id']],
-      );
+      if (localId is int) {
+        // Update 'products' table
+        // Also set sync_status to synced if we successfully pushed to server,
+        // or pending if we didn't (e.g. serverId was null or failed)
+        if (serverId != null) {
+          localUpdateData['sync_status'] = 1; // Synced
+        } else {
+          localUpdateData['sync_status'] = 0; // Pending
+        }
+
+        await db.update(
+          'products',
+          localUpdateData,
+          where: 'local_id = ?',
+          whereArgs: [localId],
+        );
+      } else if (localId is String) {
+        // Update 'productsinfo' table
+        await db.update(
+          'productsinfo',
+          localUpdateData,
+          where: 'local_id = ?',
+          whereArgs: [localId],
+        );
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               'Product "${_nameController.text.trim()}" updated successfully!',
-              style: GoogleFonts.plusJakartaSans(color: Colors.white),
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
@@ -159,10 +249,7 @@ class _EditProductPageState extends State<EditProductPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Failed to update product: $e',
-              style: GoogleFonts.plusJakartaSans(color: Colors.white),
-            ),
+            content: Text('Failed to update product: $e'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -226,7 +313,11 @@ class _EditProductPageState extends State<EditProductPage> {
                     controller: _nameController,
                     label: 'Product Name *',
                     hint: 'e.g. Infinix Hot 30',
-                    validator: (value) => value?.trim().isEmpty ?? true ? 'Name is required' : null,
+                    validator:
+                        (value) =>
+                            value?.trim().isEmpty ?? true
+                                ? 'Name is required'
+                                : null,
                   ),
                   const SizedBox(height: 20),
 
@@ -274,8 +365,10 @@ class _EditProductPageState extends State<EditProductPage> {
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       final cleaned = value?.replaceAll(',', '');
-                      if (cleaned == null || cleaned.isEmpty) return 'Selling price required';
-                      if (double.tryParse(cleaned) == null || double.tryParse(cleaned)! <= 0) {
+                      if (cleaned == null || cleaned.isEmpty)
+                        return 'Selling price required';
+                      if (double.tryParse(cleaned) == null ||
+                          double.tryParse(cleaned)! <= 0) {
                         return 'Enter a valid price > 0';
                       }
                       return null;
@@ -301,7 +394,10 @@ class _EditProductPageState extends State<EditProductPage> {
                             children: [
                               Text(
                                 'SKU (Read-only)',
-                                style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 14),
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -322,7 +418,10 @@ class _EditProductPageState extends State<EditProductPage> {
 
                   // Active Switch
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 18,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(16),
@@ -336,11 +435,17 @@ class _EditProductPageState extends State<EditProductPage> {
                           children: [
                             Text(
                               'Product Status',
-                              style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 14),
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
                             ),
                             Text(
                               _isActive ? 'Active' : 'Inactive',
-                              style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
@@ -365,17 +470,23 @@ class _EditProductPageState extends State<EditProductPage> {
                         foregroundColor: Colors.white,
                         elevation: 12,
                         shadowColor: const Color(0xFF4BB4FF).withOpacity(0.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
-                          : Text(
-                              'Update Product',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
+                      child:
+                          _isLoading
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              )
+                              : Text(
+                                'Update Product',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                            ),
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -435,7 +546,10 @@ class _EditProductPageState extends State<EditProductPage> {
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: Colors.redAccent),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 16,
+            ),
           ),
         ),
       ],
@@ -475,10 +589,7 @@ class _EditProductPageState extends State<EditProductPage> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      _selectedImage!,
-                      fit: BoxFit.cover,
-                    ),
+                    child: Image.file(_selectedImage!, fit: BoxFit.cover),
                   ),
                 )
               else if (widget.product['image'] != null)
@@ -494,7 +605,11 @@ class _EditProductPageState extends State<EditProductPage> {
                     child: Image.file(
                       File(widget.product['image']),
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.white54),
+                      errorBuilder:
+                          (_, __, ___) => const Icon(
+                            Icons.broken_image,
+                            color: Colors.white54,
+                          ),
                     ),
                   ),
                 )
@@ -511,11 +626,18 @@ class _EditProductPageState extends State<EditProductPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.image_outlined, color: Colors.white54, size: 32),
+                        Icon(
+                          Icons.image_outlined,
+                          color: Colors.white54,
+                          size: 32,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'No image selected',
-                          style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 14),
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white54,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -536,7 +658,9 @@ class _EditProductPageState extends State<EditProductPage> {
                         foregroundColor: Colors.white,
                         side: BorderSide(color: Colors.white.withOpacity(0.3)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       icon: Icon(Icons.photo_library, size: 20),
                       label: Text(
@@ -556,7 +680,9 @@ class _EditProductPageState extends State<EditProductPage> {
                         foregroundColor: Colors.white,
                         side: BorderSide(color: Colors.white.withOpacity(0.3)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       icon: Icon(Icons.camera_alt, size: 20),
                       label: Text(
@@ -577,7 +703,9 @@ class _EditProductPageState extends State<EditProductPage> {
                           foregroundColor: Colors.white,
                           side: BorderSide(color: Colors.red.withOpacity(0.5)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         icon: Icon(Icons.delete, size: 20),
                         label: Text(
@@ -601,7 +729,11 @@ class _EditProductPageState extends State<EditProductPage> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.qr_code, color: const Color(0xFF4BB4FF), size: 24),
+                    Icon(
+                      Icons.qr_code,
+                      color: const Color(0xFF4BB4FF),
+                      size: 24,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -617,9 +749,14 @@ class _EditProductPageState extends State<EditProductPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _qrCodeData != null ? 'Scanned: $_qrCodeData' : 'Tap to scan product QR code',
+                            _qrCodeData != null
+                                ? 'Scanned: $_qrCodeData'
+                                : 'Tap to scan product QR code',
                             style: GoogleFonts.plusJakartaSans(
-                              color: _qrCodeData != null ? Colors.white : Colors.white54,
+                              color:
+                                  _qrCodeData != null
+                                      ? Colors.white
+                                      : Colors.white54,
                               fontSize: 12,
                             ),
                           ),
@@ -627,7 +764,10 @@ class _EditProductPageState extends State<EditProductPage> {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.qr_code_scanner, color: const Color(0xFF4BB4FF)),
+                      icon: Icon(
+                        Icons.qr_code_scanner,
+                        color: const Color(0xFF4BB4FF),
+                      ),
                       onPressed: _scanQRCode,
                     ),
                   ],
@@ -664,12 +804,19 @@ class _EditProductPageState extends State<EditProductPage> {
             child: DropdownButton<String>(
               value: _selectedUnit,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.white70,
+              ),
               dropdownColor: const Color(0xFF0A1B32),
-              style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 16),
-              items: _units.map((unit) {
-                return DropdownMenuItem(value: unit, child: Text(unit));
-              }).toList(),
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+              items:
+                  _units.map((unit) {
+                    return DropdownMenuItem(value: unit, child: Text(unit));
+                  }).toList(),
               onChanged: (value) {
                 if (value != null) setState(() => _selectedUnit = value);
               },

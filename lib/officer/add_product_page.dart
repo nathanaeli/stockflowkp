@@ -4,6 +4,7 @@ import 'package:flutter/services.dart'; // Added for clipboard
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stockflowkp/services/database_service.dart';
 import 'package:stockflowkp/services/sync_service.dart';
+import 'package:stockflowkp/services/api_service.dart';
 import 'package:stockflowkp/utils/image_utils.dart';
 import 'package:stockflowkp/utils/qr_scanner.dart';
 
@@ -20,7 +21,9 @@ class _AddProductPageState extends State<AddProductPage> {
   final _descriptionController = TextEditingController();
   final _basePriceController = TextEditingController();
   final _sellingPriceController = TextEditingController();
-  final _skuController = TextEditingController(text: 'SKU will be generated automatically...');
+  final _skuController = TextEditingController(
+    text: 'SKU will be generated automatically...',
+  );
 
   // Stock fields
   final _quantityController = TextEditingController();
@@ -28,8 +31,24 @@ class _AddProductPageState extends State<AddProductPage> {
   final _expiryDateController = TextEditingController();
 
   final List<String> _units = [
-    'PCS', 'KG', 'LTR', 'MTR', 'BOX', 'PACK', 'BAG', 'CAN', 'BTL', 'ROLL',
-    'SHEET', 'TUBE', 'PAIR', 'SET', 'DOZEN', 'BUNDLE', 'CARTON', 'CASE'
+    'PCS',
+    'KG',
+    'LTR',
+    'MTR',
+    'BOX',
+    'PACK',
+    'BAG',
+    'CAN',
+    'BTL',
+    'ROLL',
+    'SHEET',
+    'TUBE',
+    'PAIR',
+    'SET',
+    'DOZEN',
+    'BUNDLE',
+    'CARTON',
+    'CASE',
   ];
   String _selectedUnit = 'PCS';
   List<Map<String, dynamic>> _categories = [];
@@ -107,14 +126,15 @@ class _AddProductPageState extends State<AddProductPage> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          body: QRCodeScanner(
-            onQRCodeScanned: (code) {
-              Navigator.pop(context, code);
-            },
-            initialMessage: 'Scan the product\'s QR/barcode to auto-fill',
-          ),
-        ),
+        builder:
+            (context) => Scaffold(
+              body: QRCodeScanner(
+                onQRCodeScanned: (code) {
+                  Navigator.pop(context, code);
+                },
+                initialMessage: 'Scan the product\'s QR/barcode to auto-fill',
+              ),
+            ),
       ),
     );
 
@@ -129,7 +149,8 @@ class _AddProductPageState extends State<AddProductPage> {
     final priceText = _sellingPriceController.text.trim();
 
     final hasName = name.isNotEmpty;
-    final hasValidPrice = double.tryParse(priceText.replaceAll(',', '')) != null &&
+    final hasValidPrice =
+        double.tryParse(priceText.replaceAll(',', '')) != null &&
         double.tryParse(priceText.replaceAll(',', ''))! > 0;
 
     if (hasName && hasValidPrice) {
@@ -151,10 +172,11 @@ class _AddProductPageState extends State<AddProductPage> {
 
     String prefix = 'PROD';
     if (name.isNotEmpty) {
-      prefix = name
-          .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
-          .substring(0, name.length >= 4 ? 4 : name.length)
-          .toUpperCase();
+      prefix =
+          name
+              .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+              .substring(0, name.length >= 4 ? 4 : name.length)
+              .toUpperCase();
     }
 
     String pricePart = '000000';
@@ -206,117 +228,67 @@ class _AddProductPageState extends State<AddProductPage> {
     setState(() => _isLoading = true);
 
     try {
-      final dbService = DatabaseService();
-      final db = await dbService.database;
+      final syncService = SyncService();
+      final token = await syncService.getAuthToken();
 
-      String? imagePath;
-      if (_selectedImage != null) {
-        final bytes = await _selectedImage!.readAsBytes();
-        final fileName = ImageUtils().generateImageFileName(_nameController.text.trim());
-        imagePath = await ImageUtils().saveImageToStorage(bytes, fileName);
+      if (token == null) {
+        throw Exception('Authentication token not found. Please log in again.');
       }
 
       final productData = {
-        'tenant_id': 1,
-        'duka_id': 1,
-        'category_id': _selectedCategoryId,
-        'sku': _skuController.text.trim(),
         'name': _nameController.text.trim(),
-        'description': _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+        'description': _descriptionController.text.trim(),
         'unit': _selectedUnit,
-        'base_price': double.tryParse(_basePriceController.text.replaceAll(',', '')) ?? 0.0,
-        'selling_price': double.tryParse(_sellingPriceController.text.replaceAll(',', '')) ?? 0.0,
-        'is_active': _isActive,
-        'image': imagePath,
-        'image_url': null,
+        'buying_price':
+            double.tryParse(_basePriceController.text.replaceAll(',', '')) ??
+            0.0,
+        'selling_price':
+            double.tryParse(_sellingPriceController.text.replaceAll(',', '')) ??
+            0.0,
+        'category_name':
+            'General', // Or fetch/select category name correctly. Using 'General' as fallback or from ID if map available.
+
+        'initial_stock':
+            _addStock
+                ? (int.tryParse(_quantityController.text.trim()) ?? 0)
+                : 0,
         'barcode': _qrCodeData,
+        'track_items': false, // or add toggle
+        'is_active': _isActive ? 1 : 0,
       };
 
-      // Use the new createPendingProduct method
-      final productId = await dbService.createPendingProduct(productData);
-
-      if (_addStock && _quantityController.text.trim().isNotEmpty) {
-        final quantity = int.tryParse(_quantityController.text.trim()) ?? 0;
-        
-        if (quantity > 0) {
-          // Create stock record
-          final stockData = {
-            'product_id': productId,
-            'duka_id': 1,
-            'quantity': quantity,
-            'last_updated_by': 1,
-            'batch_number': _batchNumberController.text.trim().isEmpty ? null : _batchNumberController.text.trim(),
-            'expiry_date': _expiryDateController.text.trim().isEmpty ? null : _expiryDateController.text.trim(),
-            'notes': null,
-          };
-          await dbService.createPendingStock(stockData);
-          
-          // Create stock movement record for proper audit trail and sync
-          final movementData = {
-            'product_id': productId,
-            'duka_id': 1,
-            'quantity': quantity,
-            'type': 'add',
-            'reason': 'Initial stock from product creation',
-          };
-          await dbService.createStockMovement(movementData);
+      // Find category name
+      if (_selectedCategoryId != null) {
+        final cat = _categories.firstWhere(
+          (c) => c['server_id'] == _selectedCategoryId,
+          orElse: () => {},
+        );
+        if (cat.isNotEmpty) {
+          productData['category_name'] = cat['name'];
         }
       }
 
-      // Attempt immediate sync
-      bool isSynced = false;
-      String statusMessage = 'Product will sync when connection is available.';
-
-      try {
-        final syncService = SyncService();
-        final token = await syncService.getAuthToken();
-
-        if (token != null && token.isNotEmpty) {
-          final result = await syncService.syncSpecificProduct(productId, token);
-          if (result['success'] == true) {
-            isSynced = true;
-            statusMessage = 'Product synced to server successfully!';
-          } else {
-            statusMessage = 'Saved locally. Sync failed: ${result['message'] ?? "Unknown error"}';
-          }
-        }
-      } catch (e) {
-        debugPrint('Auto-sync failed: $e');
-      }
+      final apiService = ApiService();
+      // Call API
+      await apiService.addProduct(productData, _selectedImage, token);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
-              children: [
-                Icon(isSynced ? Icons.cloud_done : Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Product "${_nameController.text.trim()}" added successfully!\n'
-                    'SKU: ${_skuController.text}\n'
-                    '${_addStock && _quantityController.text.trim().isNotEmpty ? "Stock added: ${_quantityController.text} ${_selectedUnit}\n" : ""}'
-                    '${_selectedImage != null ? "Image saved\n" : ""}'
-                    '${_qrCodeData != null ? "Barcode: $_qrCodeData\n" : ""}'
-                    '$statusMessage',
-                    style: GoogleFonts.plusJakartaSans(color: Colors.white),
-                  ),
-                ),
-              ],
+            content: Text(
+              'Product "${_nameController.text.trim()}" added successfully!',
             ),
-            backgroundColor: isSynced ? Colors.green : Colors.orange,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 5),
+            backgroundColor: Colors.green,
           ),
         );
         Navigator.of(context).pop(true);
       }
     } catch (e) {
-      debugPrint('Error saving product: $e');
+      debugPrint('Error adding product: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to add product: $e'),
+            content: Text('Failed to add product: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -350,7 +322,11 @@ class _AddProductPageState extends State<AddProductPage> {
         ),
         title: Text(
           'Add New Product',
-          style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 20),
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
       ),
@@ -372,16 +348,33 @@ class _AddProductPageState extends State<AddProductPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  Text('Fill in product details', style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 16)),
+                  Text(
+                    'Fill in product details',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white70,
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 30),
 
-                  _buildTextField(controller: _nameController, label: 'Product Name *', hint: 'e.g. Infinix Hot 30', validator: (v) => v?.trim().isEmpty ?? true ? 'Required' : null),
+                  _buildTextField(
+                    controller: _nameController,
+                    label: 'Product Name *',
+                    hint: 'e.g. Infinix Hot 30',
+                    validator:
+                        (v) => v?.trim().isEmpty ?? true ? 'Required' : null,
+                  ),
                   const SizedBox(height: 20),
 
                   _buildImageUploadSection(),
                   const SizedBox(height: 20),
 
-                  _buildTextField(controller: _descriptionController, label: 'Description (Optional)', hint: 'Brief description', maxLines: 4),
+                  _buildTextField(
+                    controller: _descriptionController,
+                    label: 'Description (Optional)',
+                    hint: 'Brief description',
+                    maxLines: 4,
+                  ),
                   const SizedBox(height: 20),
 
                   _buildCategoryDropdown(),
@@ -390,10 +383,22 @@ class _AddProductPageState extends State<AddProductPage> {
                   _buildUnitDropdown(),
                   const SizedBox(height: 30),
 
-                  Text('Pricing', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+                  Text(
+                    'Pricing',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   const SizedBox(height: 16),
 
-                  _buildTextField(controller: _basePriceController, label: 'Base Price (TZS)', hint: 'Cost price (optional)', keyboardType: TextInputType.number),
+                  _buildTextField(
+                    controller: _basePriceController,
+                    label: 'Base Price (TZS)',
+                    hint: 'Cost price (optional)',
+                    keyboardType: TextInputType.number,
+                  ),
                   const SizedBox(height: 20),
 
                   _buildTextField(
@@ -405,16 +410,29 @@ class _AddProductPageState extends State<AddProductPage> {
                       final cleaned = v?.replaceAll(',', '');
                       if (cleaned == null || cleaned.isEmpty) return 'Required';
                       final price = double.tryParse(cleaned);
-                      if (price == null || price <= 0) return 'Enter valid price > 0';
+                      if (price == null || price <= 0)
+                        return 'Enter valid price > 0';
                       return null;
                     },
                   ),
                   const SizedBox(height: 30),
 
-                  Text('Initial Stock (Optional)', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+                  Text(
+                    'Initial Stock (Optional)',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   const SizedBox(height: 16),
 
-                  _buildSwitchTile(title: 'Add Initial Stock', subtitle: _addStock ? 'Yes' : 'No', value: _addStock, onChanged: (v) => setState(() => _addStock = v)),
+                  _buildSwitchTile(
+                    title: 'Add Initial Stock',
+                    subtitle: _addStock ? 'Yes' : 'No',
+                    value: _addStock,
+                    onChanged: (v) => setState(() => _addStock = v),
+                  ),
                   const SizedBox(height: 16),
 
                   if (_addStock) ...[
@@ -423,10 +441,21 @@ class _AddProductPageState extends State<AddProductPage> {
                       label: 'Quantity *',
                       hint: 'e.g. 50',
                       keyboardType: TextInputType.number,
-                      validator: (_) => _addStock && (int.tryParse(_quantityController.text) ?? 0) <= 0 ? 'Valid quantity required' : null,
+                      validator:
+                          (_) =>
+                              _addStock &&
+                                      (int.tryParse(_quantityController.text) ??
+                                              0) <=
+                                          0
+                                  ? 'Valid quantity required'
+                                  : null,
                     ),
                     const SizedBox(height: 16),
-                    _buildTextField(controller: _batchNumberController, label: 'Batch Number (Optional)', hint: 'e.g. BATCH-001'),
+                    _buildTextField(
+                      controller: _batchNumberController,
+                      label: 'Batch Number (Optional)',
+                      hint: 'e.g. BATCH-001',
+                    ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _expiryDateController,
@@ -434,61 +463,101 @@ class _AddProductPageState extends State<AddProductPage> {
                       hint: 'Select Date',
                       readOnly: true,
                       onTap: () => _selectExpiryDate(context),
-                      suffixIcon: const Icon(Icons.calendar_today, color: Colors.white70, size: 20),
+                      suffixIcon: const Icon(
+                        Icons.calendar_today,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(height: 24),
                   ],
 
-                  _buildSwitchTile(title: 'Product Status', subtitle: _isActive ? 'Active' : 'Inactive', value: _isActive, onChanged: (v) => setState(() => _isActive = v)),
+                  _buildSwitchTile(
+                    title: 'Product Status',
+                    subtitle: _isActive ? 'Active' : 'Inactive',
+                    value: _isActive,
+                    onChanged: (v) => setState(() => _isActive = v),
+                  ),
                   const SizedBox(height: 30),
 
                   // SKU Display
                   _canGenerateSku
                       ? Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF4BB4FF).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFF4BB4FF).withOpacity(0.4)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.auto_awesome, color: Color(0xFF4BB4FF)),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Generated SKU', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF4BB4FF), fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 4),
-                                    Text(_skuController.text, style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.copy, color: Color(0xFF4BB4FF)),
-                                onPressed: _copySkuToClipboard,
-                              ),
-                            ],
-                          ),
-                        )
-                      : Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white.withOpacity(0.2)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.info_outline, color: Colors.white54),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(_skuController.text, style: GoogleFonts.plusJakartaSans(color: Colors.white54)),
-                              ),
-                            ],
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4BB4FF).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFF4BB4FF).withOpacity(0.4),
                           ),
                         ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.auto_awesome,
+                              color: Color(0xFF4BB4FF),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Generated SKU',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFF4BB4FF),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _skuController.text,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.copy,
+                                color: Color(0xFF4BB4FF),
+                              ),
+                              onPressed: _copySkuToClipboard,
+                            ),
+                          ],
+                        ),
+                      )
+                      : Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline,
+                              color: Colors.white54,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _skuController.text,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white54,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   const SizedBox(height: 40),
 
                   SizedBox(
@@ -500,11 +569,23 @@ class _AddProductPageState extends State<AddProductPage> {
                         backgroundColor: const Color(0xFF4BB4FF),
                         elevation: 12,
                         shadowColor: const Color(0xFF4BB4FF).withOpacity(0.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text('Save Product', style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white)),
+                      child:
+                          _isLoading
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : Text(
+                                'Save Product',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -532,7 +613,14 @@ class _AddProductPageState extends State<AddProductPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 15)),
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white70,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -548,18 +636,38 @@ class _AddProductPageState extends State<AddProductPage> {
             filled: true,
             suffixIcon: suffixIcon,
             fillColor: Colors.white.withOpacity(0.08),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.white.withOpacity(0.2))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.white.withOpacity(0.3))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF4BB4FF), width: 2)),
-            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Colors.redAccent)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFF4BB4FF), width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Colors.redAccent),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 16,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSwitchTile({required String title, required String subtitle, required bool value, required ValueChanged<bool> onChanged}) {
+  Widget _buildSwitchTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       decoration: BoxDecoration(
@@ -573,11 +681,27 @@ class _AddProductPageState extends State<AddProductPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 14)),
-              Text(subtitle, style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600)),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
-          Switch(value: value, onChanged: onChanged, activeColor: const Color(0xFF4BB4FF)),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: const Color(0xFF4BB4FF),
+          ),
         ],
       ),
     );
@@ -587,7 +711,14 @@ class _AddProductPageState extends State<AddProductPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Category', style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 15)),
+        Text(
+          'Category',
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white70,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -600,14 +731,34 @@ class _AddProductPageState extends State<AddProductPage> {
             child: DropdownButton<int>(
               value: _selectedCategoryId,
               isExpanded: true,
-              hint: Text('Select Category', style: GoogleFonts.plusJakartaSans(color: Colors.white38)),
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70),
+              hint: Text(
+                'Select Category',
+                style: GoogleFonts.plusJakartaSans(color: Colors.white38),
+              ),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.white70,
+              ),
               dropdownColor: const Color(0xFF0A1B32),
-              style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 16),
-              items: _categories.where((c) => c['server_id'] != null).map((cat) => DropdownMenuItem<int>(
-                value: cat['server_id'] as int,
-                child: Text(cat['name'] ?? 'Unknown', style: GoogleFonts.plusJakartaSans(color: Colors.white)),
-              )).toList(),
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+              items:
+                  _categories
+                      .where((c) => c['server_id'] != null)
+                      .map(
+                        (cat) => DropdownMenuItem<int>(
+                          value: cat['server_id'] as int,
+                          child: Text(
+                            cat['name'] ?? 'Unknown',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
               onChanged: (v) => setState(() => _selectedCategoryId = v),
             ),
           ),
@@ -620,7 +771,14 @@ class _AddProductPageState extends State<AddProductPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Unit *', style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 15)),
+        Text(
+          'Unit *',
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white70,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -633,10 +791,22 @@ class _AddProductPageState extends State<AddProductPage> {
             child: DropdownButton<String>(
               value: _selectedUnit,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.white70,
+              ),
               dropdownColor: const Color(0xFF0A1B32),
-              style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 16),
-              items: _units.map((unit) => DropdownMenuItem(value: unit, child: Text(unit))).toList(),
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+              items:
+                  _units
+                      .map(
+                        (unit) =>
+                            DropdownMenuItem(value: unit, child: Text(unit)),
+                      )
+                      .toList(),
               onChanged: (v) => setState(() => _selectedUnit = v!),
             ),
           ),
@@ -649,7 +819,14 @@ class _AddProductPageState extends State<AddProductPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Product Image (Optional)', style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 15)),
+        Text(
+          'Product Image (Optional)',
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white70,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(16),
@@ -663,26 +840,40 @@ class _AddProductPageState extends State<AddProductPage> {
               // Preview
               _selectedImage != null
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(_selectedImage!, height: 120, width: double.infinity, fit: BoxFit.cover),
-                    )
-                  : Container(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      _selectedImage!,
                       height: 120,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white.withOpacity(0.1),
-                        border: Border.all(color: Colors.white.withOpacity(0.3)),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.image_outlined, color: Colors.white54, size: 32),
-                            Text('No image selected', style: GoogleFonts.plusJakartaSans(color: Colors.white54)),
-                          ],
-                        ),
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                  : Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white.withOpacity(0.1),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.image_outlined,
+                            color: Colors.white54,
+                            size: 32,
+                          ),
+                          Text(
+                            'No image selected',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white54,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
               const SizedBox(height: 16),
 
               // Buttons
@@ -693,7 +884,10 @@ class _AddProductPageState extends State<AddProductPage> {
                       onPressed: _pickImageFromGallery,
                       icon: const Icon(Icons.photo_library, size: 20),
                       label: const Text('Gallery'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.1), padding: const EdgeInsets.symmetric(vertical: 12)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -702,7 +896,10 @@ class _AddProductPageState extends State<AddProductPage> {
                       onPressed: _takePhoto,
                       icon: const Icon(Icons.camera_alt, size: 20),
                       label: const Text('Camera'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.1), padding: const EdgeInsets.symmetric(vertical: 12)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
                     ),
                   ),
                   if (_selectedImage != null) ...[
@@ -712,7 +909,9 @@ class _AddProductPageState extends State<AddProductPage> {
                         onPressed: _removeImage,
                         icon: const Icon(Icons.delete, size: 20),
                         label: const Text('Remove'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red.withOpacity(0.2)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.withOpacity(0.2),
+                        ),
                       ),
                     ),
                   ],
@@ -723,7 +922,11 @@ class _AddProductPageState extends State<AddProductPage> {
               // QR Scanner
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white.withOpacity(0.2))),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                ),
                 child: Row(
                   children: [
                     const Icon(Icons.qr_code, color: Color(0xFF4BB4FF)),
@@ -732,12 +935,33 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Scan QR/Barcode', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF4BB4FF), fontWeight: FontWeight.w600)),
-                          Text(_qrCodeData ?? 'Tap to scan', style: GoogleFonts.plusJakartaSans(color: _qrCodeData != null ? Colors.white : Colors.white54, fontSize: 12)),
+                          Text(
+                            'Scan QR/Barcode',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF4BB4FF),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            _qrCodeData ?? 'Tap to scan',
+                            style: GoogleFonts.plusJakartaSans(
+                              color:
+                                  _qrCodeData != null
+                                      ? Colors.white
+                                      : Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    IconButton(icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF4BB4FF)), onPressed: _scanQRCode),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.qr_code_scanner,
+                        color: Color(0xFF4BB4FF),
+                      ),
+                      onPressed: _scanQRCode,
+                    ),
                   ],
                 ),
               ),

@@ -560,4 +560,139 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get notAuthenticated => 'Haijaithibitishwa';
+
+  @override
+  String get financialOverview => 'Mapitio ya Kifedha';
+
+  @override
+  String get estProfit => 'Faida Iliyokadiriwa';
+
+  @override
+  String get expenses => 'Gharama';
+
+  @override
+  String get netIncome => 'Mapato Halisi';
+
+  @override
+  String get businessInventory => 'Biashara na Mali';
+
+  @override
+  String get totalProducts => 'Jumla ya Bidhaa';
+
+  @override
+  String get accountBalance => 'Salio la Akaunti';
+
+  @override
+  String get stockValueCost => 'Thamani ya Mali (Gharama)';
+
+  @override
+  String get todaysPerformanceByShop => 'Utendaji wa Leo kwa Duka';
+
+  @override
+  String get allShops => 'Maduka Yote';
+
+  @override
+  String get tenantName => 'Jina la Mpangaji';
+
+  @override
+  String get role => 'Wadhifa';
+
+  @override
+  String get joined => 'Amejiunga';
+
+  @override
+  String get editProfile => 'Hariri Wasifu';
+
+  @override
+  String get myShops => 'Maduka Yangu';
+
+  @override
+  String get profile => 'Wasifu';
+
+  @override
+  String get settings => 'Mipangilio';
+
+  @override
+  String get serverSync => 'Usawazishaji wa Seva';
+
+  @override
+  String get todaySales => 'Mauzo ya Leo';
+
+  @override
+  String get todayProfit => 'Faida ya Leo';
+
+  @override
+  String get shopSettings => 'Mipangilio ya Duka';
+
+  @override
+  String get viewFullReport => 'Angalia Ripoti Kamili';
+
+  @override
+  String get management => 'Usimamizi';
+
+  @override
+  String get performanceToday => 'Utendaji wa Leo';
+
+  @override
+  String get stockCount => 'Idadi ya Mali';
+
+  @override
+  String get created => 'Imeundwa';
+
+  @override
+  String get noShopActivity => 'Hakuna shughuli za duka zilizorekodiwa leo';
+
+  @override
+  String get retryConnection => 'Jaribu Kuunganisha Tena';
+
+  @override
+  String get somethingWentWrong => 'Kuna hitilafu imetokea';
+
+  @override
+  String get selectLanguage => 'Chagua Lugha';
+
+  @override
+  String get inventory => 'Mali';
+
+  @override
+  String get refreshInventory => 'Sasisha Mali';
+
+  @override
+  String get costPrice => 'Bei ya Kununua';
+
+  @override
+  String get sellingPrice => 'Bei ya Kuuza';
+
+  @override
+  String get margin => 'FAIDA';
+
+  @override
+  String get waitingForSync => 'inasubiri kuunganishwa...';
+
+  @override
+  String get noLocalProductsFound => 'Hakuna Mali Iliyopatikana';
+
+  @override
+  String get addProductsOrSync => 'Ongeza bidhaa au unganisha kutoka kwa seva';
+
+  @override
+  String get profitAndLoss => 'Faida na Hasara';
+
+  @override
+  String get manageOfficers => 'Dhibiti Maafisa';
+
+  @override
+  String get productCategories => 'Aina za Bidhaa';
+
+  @override
+  String get transactionsReport => 'Ripoti ya Mauzo';
+
+  @override
+  String get inventoryAndAging => 'Mali na Uchakavu';
+
+  @override
+  String get registerNewShop => 'Sajili Duka Jipya';
+
+  @override
+  String get featureComingSoon => 'Kipengele hiki kinakuja hivi karibuni';
 }

@@ -10,6 +10,8 @@ import 'package:printing/printing.dart';
 import 'package:stockflowkp/l10n/app_localizations.dart';
 import 'package:stockflowkp/services/database_service.dart';
 import 'package:stockflowkp/services/sale_service.dart';
+import 'package:stockflowkp/services/api_service.dart';
+import 'package:stockflowkp/services/sync_service.dart';
 
 class SaleDetailsPage extends StatefulWidget {
   final Map<String, dynamic> sale;
@@ -55,10 +57,7 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
           productName = products.first['name'] as String;
         }
 
-        enrichedItems.add({
-          ...item,
-          'product_name': productName,
-        });
+        enrichedItems.add({...item, 'product_name': productName});
       }
 
       // Load customer information if not already available
@@ -103,14 +102,20 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
       if (result['success'] == true && result['data'] != null) {
         final apiSale = result['data']['sale'];
         final items = result['data']['sale_items'] as List;
-        final mappedItems = items.map((item) => {
-          'product_name': item['product']['name'],
-          'quantity': item['quantity'],
-          'unit_price': item['unit_price'],
-          'subtotal': item['total'],
-          'server_id': item['id'],
-          'discount_amount': item['discount_amount'],
-        }).toList();
+        final mappedItems =
+            items
+                .map(
+                  (item) => {
+                    'product_name': item['product']['name'],
+                    'product_id': item['product']['id'],
+                    'quantity': item['quantity'],
+                    'unit_price': item['unit_price'],
+                    'subtotal': item['total'],
+                    'server_id': item['id'],
+                    'discount_amount': item['discount_amount'],
+                  },
+                )
+                .toList();
 
         if (mounted) {
           setState(() {
@@ -140,17 +145,20 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
   }
 
   // ======================= PREMIUM PDF GENERATION =======================
-  Future<Uint8List> _generatePdf(PdfPageFormat format, AppLocalizations localizations) async {
+  Future<Uint8List> _generatePdf(
+    PdfPageFormat format,
+    AppLocalizations localizations,
+  ) async {
     final doc = pw.Document();
 
     // Fetch Tenant Details from tenant_account table
     final db = await DatabaseService().database;
     final tenantRes = await db.query(
-      'tenant_account', 
+      'tenant_account',
       orderBy: 'local_id DESC',
-      limit: 1
+      limit: 1,
     );
-    
+
     Map<String, dynamic> tenant = {};
     if (tenantRes.isNotEmpty) {
       tenant = tenantRes.first;
@@ -160,21 +168,26 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
     }
 
     // Use tenant account information for company details
-    final companyName = (tenant['company_name'] as String?)?.trim().isNotEmpty == true 
-        ? tenant['company_name'] as String 
-        : 'StockflowKP';
-    final companyAddress = (tenant['address'] as String?)?.trim().isNotEmpty == true 
-        ? tenant['address'] as String 
-        : '';
-    final companyPhone = (tenant['phone'] as String?)?.trim().isNotEmpty == true 
-        ? tenant['phone'] as String 
-        : '';
-    final companyEmail = (tenant['email'] as String?)?.trim().isNotEmpty == true 
-        ? tenant['email'] as String 
-        : '';
-    final logoPath = (tenant['logo'] as String?)?.trim().isNotEmpty == true 
-        ? tenant['logo'] as String 
-        : null;
+    final companyName =
+        (tenant['company_name'] as String?)?.trim().isNotEmpty == true
+            ? tenant['company_name'] as String
+            : 'StockflowKP';
+    final companyAddress =
+        (tenant['address'] as String?)?.trim().isNotEmpty == true
+            ? tenant['address'] as String
+            : '';
+    final companyPhone =
+        (tenant['phone'] as String?)?.trim().isNotEmpty == true
+            ? tenant['phone'] as String
+            : '';
+    final companyEmail =
+        (tenant['email'] as String?)?.trim().isNotEmpty == true
+            ? tenant['email'] as String
+            : '';
+    final logoPath =
+        (tenant['logo'] as String?)?.trim().isNotEmpty == true
+            ? tenant['logo'] as String
+            : null;
 
     pw.ImageProvider? logoImage;
     if (logoPath != null && logoPath.isNotEmpty) {
@@ -189,7 +202,10 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
       }
     }
 
-    final invoiceNum = _sale['invoice_number']?.toString() ?? _sale['server_id']?.toString() ?? "LOC-${_sale['local_id']}";
+    final invoiceNum =
+        _sale['invoice_number']?.toString() ??
+        _sale['server_id']?.toString() ??
+        "LOC-${_sale['local_id']}";
     final date = DateTime.tryParse(_sale['created_at'] ?? '') ?? DateTime.now();
     final dateStr = DateFormat('dd MMM yyyy').format(date);
     final timeStr = DateFormat('HH:mm').format(date);
@@ -203,15 +219,17 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
 
     if (_sale['customer_name'] != null) {
       customerName = _sale['customer_name'] as String;
-      
+
       final List<String> details = [];
-      if (_sale['customer_phone'] != null && (_sale['customer_phone'] as String).isNotEmpty) {
+      if (_sale['customer_phone'] != null &&
+          (_sale['customer_phone'] as String).isNotEmpty) {
         details.add(_sale['customer_phone'] as String);
       }
-      if (_sale['customer_address'] != null && (_sale['customer_address'] as String).isNotEmpty) {
+      if (_sale['customer_address'] != null &&
+          (_sale['customer_address'] as String).isNotEmpty) {
         details.add(_sale['customer_address'] as String);
       }
-      
+
       if (details.isNotEmpty) {
         customerInfo = details.join(' • ');
       } else {
@@ -230,15 +248,17 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
         if (customerRes.isNotEmpty) {
           final customer = customerRes.first;
           customerName = customer['name'] as String? ?? localizations.customer;
-          
+
           final List<String> details = [];
-          if (customer['phone'] != null && (customer['phone'] as String).isNotEmpty) {
+          if (customer['phone'] != null &&
+              (customer['phone'] as String).isNotEmpty) {
             details.add(customer['phone'] as String);
           }
-          if (customer['address'] != null && (customer['address'] as String).isNotEmpty) {
+          if (customer['address'] != null &&
+              (customer['address'] as String).isNotEmpty) {
             details.add(customer['address'] as String);
           }
-          
+
           if (details.isNotEmpty) {
             customerInfo = details.join(' • ');
           } else {
@@ -274,7 +294,12 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
 
     doc.addPage(
       pw.Page(
-        pageFormat: format.copyWith(marginLeft: 40, marginRight: 40, marginTop: 30, marginBottom: 30),
+        pageFormat: format.copyWith(
+          marginLeft: 40,
+          marginRight: 40,
+          marginTop: 30,
+          marginBottom: 30,
+        ),
         build: (pw.Context context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -308,22 +333,45 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                             child: pw.Image(logoImage, fit: pw.BoxFit.contain),
                           ),
                         ),
-                      pw.Text(companyName,
-                          style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: pdfBlue900)),
+                      pw.Text(
+                        companyName,
+                        style: pw.TextStyle(
+                          fontSize: 22,
+                          fontWeight: pw.FontWeight.bold,
+                          color: pdfBlue900,
+                        ),
+                      ),
                       pw.SizedBox(height: 8),
                       if (companyAddress.isNotEmpty) ...[
-                        pw.Text(companyAddress, style: pw.TextStyle(fontSize: 11, color: pdfGrey700)),
+                        pw.Text(
+                          companyAddress,
+                          style: pw.TextStyle(fontSize: 11, color: pdfGrey700),
+                        ),
                         pw.SizedBox(height: 4),
                       ],
-                      if (companyPhone.isNotEmpty || companyEmail.isNotEmpty) ...[
+                      if (companyPhone.isNotEmpty ||
+                          companyEmail.isNotEmpty) ...[
                         pw.Row(
                           children: [
-                            if (companyPhone.isNotEmpty) 
-                              pw.Text("${localizations.tel} $companyPhone", style: pw.TextStyle(fontSize: 11, color: pdfGrey700)),
-                            if (companyPhone.isNotEmpty && companyEmail.isNotEmpty)
+                            if (companyPhone.isNotEmpty)
+                              pw.Text(
+                                "${localizations.tel} $companyPhone",
+                                style: pw.TextStyle(
+                                  fontSize: 11,
+                                  color: pdfGrey700,
+                                ),
+                              ),
+                            if (companyPhone.isNotEmpty &&
+                                companyEmail.isNotEmpty)
                               pw.SizedBox(width: 16),
-                            if (companyEmail.isNotEmpty) 
-                              pw.Text("${localizations.emailLabel} $companyEmail", style: pw.TextStyle(fontSize: 11, color: pdfBlue700)),
+                            if (companyEmail.isNotEmpty)
+                              pw.Text(
+                                "${localizations.emailLabel} $companyEmail",
+                                style: pw.TextStyle(
+                                  fontSize: 11,
+                                  color: pdfBlue700,
+                                ),
+                              ),
                           ],
                         ),
                       ],
@@ -350,24 +398,58 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
-                        pw.Text("INVOICE",
-                            style: pw.TextStyle(fontSize: 28, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                        pw.Text(
+                          "INVOICE",
+                          style: pw.TextStyle(
+                            fontSize: 28,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.white,
+                          ),
+                        ),
                         pw.SizedBox(height: 16),
                         pw.Row(
                           mainAxisAlignment: pw.MainAxisAlignment.end,
                           children: [
-                            pw.Text("No: ", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: pdfWhite70)),
-                            pw.Text(invoiceNum, style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                            pw.Text(
+                              "No: ",
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                color: pdfWhite70,
+                              ),
+                            ),
+                            pw.Text(
+                              invoiceNum,
+                              style: pw.TextStyle(
+                                fontSize: 16,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.white,
+                              ),
+                            ),
                           ],
                         ),
                         pw.SizedBox(height: 8),
                         pw.Row(
                           mainAxisAlignment: pw.MainAxisAlignment.end,
                           children: [
-                            pw.Text("Date: ", style: pw.TextStyle(color: pdfWhite70)),
-                            pw.Text(dateStr, style: pw.TextStyle(fontSize: 14, color: PdfColors.white)),
+                            pw.Text(
+                              "Date: ",
+                              style: pw.TextStyle(color: pdfWhite70),
+                            ),
+                            pw.Text(
+                              dateStr,
+                              style: pw.TextStyle(
+                                fontSize: 14,
+                                color: PdfColors.white,
+                              ),
+                            ),
                             pw.SizedBox(width: 12),
-                            pw.Text(timeStr, style: pw.TextStyle(fontSize: 12, color: pdfWhite70)),
+                            pw.Text(
+                              timeStr,
+                              style: pw.TextStyle(
+                                fontSize: 12,
+                                color: pdfWhite70,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -389,15 +471,35 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                 ),
                 child: pw.Row(
                   children: [
-                    pw.Container(width: 6, height: 24, color: pdfBlue900, margin: const pw.EdgeInsets.only(right: 12)),
+                    pw.Container(
+                      width: 6,
+                      height: 24,
+                      color: pdfBlue900,
+                      margin: const pw.EdgeInsets.only(right: 12),
+                    ),
                     pw.Expanded(
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text(localizations.billTo, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
+                          pw.Text(
+                            localizations.billTo,
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
                           pw.SizedBox(height: 6),
-                          pw.Text(customerName, style: pw.TextStyle(fontSize: 12)),
-                          pw.Text(customerInfo, style: pw.TextStyle(fontSize: 11, color: pdfGrey600)),
+                          pw.Text(
+                            customerName,
+                            style: pw.TextStyle(fontSize: 12),
+                          ),
+                          pw.Text(
+                            customerInfo,
+                            style: pw.TextStyle(
+                              fontSize: 11,
+                              color: pdfGrey600,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -409,7 +511,13 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
               pw.Container(
                 decoration: pw.BoxDecoration(
                   borderRadius: pw.BorderRadius.circular(12),
-                  boxShadow: [pw.BoxShadow(color: pdfGrey300, blurRadius: 8, offset: const PdfPoint(0, 2))],
+                  boxShadow: [
+                    pw.BoxShadow(
+                      color: pdfGrey300,
+                      blurRadius: 8,
+                      offset: const PdfPoint(0, 2),
+                    ),
+                  ],
                   border: pw.Border.all(color: pdfGrey200),
                 ),
                 child: pw.Table(
@@ -420,15 +528,23 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                     2: const pw.FlexColumnWidth(1.8),
                     3: const pw.FlexColumnWidth(2),
                   },
-                  defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
+                  defaultVerticalAlignment:
+                      pw.TableCellVerticalAlignment.middle,
                   children: [
                     pw.TableRow(
                       decoration: pw.BoxDecoration(
-                        gradient: pw.LinearGradient(colors: [pdfBlue900, pdfBlue800]),
-                        borderRadius: const pw.BorderRadius.vertical(top: pw.Radius.circular(10)),
+                        gradient: pw.LinearGradient(
+                          colors: [pdfBlue900, pdfBlue800],
+                        ),
+                        borderRadius: const pw.BorderRadius.vertical(
+                          top: pw.Radius.circular(10),
+                        ),
                       ),
                       children: [
-                        _tableHeader(localizations.itemDescription, isRight: false),
+                        _tableHeader(
+                          localizations.itemDescription,
+                          isRight: false,
+                        ),
                         _tableHeader(localizations.qty, isRight: false),
                         _tableHeader(localizations.unitPrice, isRight: false),
                         _tableHeader(localizations.total, isRight: true),
@@ -438,18 +554,34 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                       final item = entry.value;
                       final isEven = entry.key % 2 == 0;
 
-                      final String description = (item['product_name'] as String?)?.trim() ?? localizations.unnamedItem;
-                      final String qtyStr = ((item['quantity'] as num?)?.toInt() ?? 0).toString();
-                      final String unitPriceStr = _currencyFormat.format((item['unit_price'] as num?)?.toDouble() ?? 0.0);
-                      final String subtotalStr = _currencyFormat.format((item['subtotal'] as num?)?.toDouble() ?? 0.0);
+                      final String description =
+                          (item['product_name'] as String?)?.trim() ??
+                          localizations.unnamedItem;
+                      final String qtyStr =
+                          ((item['quantity'] as num?)?.toInt() ?? 0).toString();
+                      final String unitPriceStr = _currencyFormat.format(
+                        (item['unit_price'] as num?)?.toDouble() ?? 0.0,
+                      );
+                      final String subtotalStr = _currencyFormat.format(
+                        (item['subtotal'] as num?)?.toDouble() ?? 0.0,
+                      );
 
                       return pw.TableRow(
-                        decoration: pw.BoxDecoration(color: isEven ? pdfGrey25 : PdfColors.white),
+                        decoration: pw.BoxDecoration(
+                          color: isEven ? pdfGrey25 : PdfColors.white,
+                        ),
                         children: [
                           _tableCell(description, padding: 14),
                           _tableCell(qtyStr, alignment: pw.Alignment.center),
-                          _tableCell(unitPriceStr, alignment: pw.Alignment.centerRight),
-                          _tableCell(subtotalStr, alignment: pw.Alignment.centerRight, bold: true),
+                          _tableCell(
+                            unitPriceStr,
+                            alignment: pw.Alignment.centerRight,
+                          ),
+                          _tableCell(
+                            subtotalStr,
+                            alignment: pw.Alignment.centerRight,
+                            bold: true,
+                          ),
                         ],
                       );
                     }).toList(),
@@ -467,51 +599,74 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                     width: 280,
                     padding: const pw.EdgeInsets.all(20),
                     decoration: pw.BoxDecoration(
-                      gradient: pw.LinearGradient(colors: [pdfBlue50, PdfColors.white]),
+                      gradient: pw.LinearGradient(
+                        colors: [pdfBlue50, PdfColors.white],
+                      ),
                       border: pw.Border.all(color: pdfBlue900, width: 2),
                       borderRadius: pw.BorderRadius.circular(12),
-                      boxShadow: [pw.BoxShadow(color: withOpacity(pdfBlue200, 0.4), blurRadius: 12, offset: const PdfPoint(0, 4))],
+                      boxShadow: [
+                        pw.BoxShadow(
+                          color: withOpacity(pdfBlue200, 0.4),
+                          blurRadius: 12,
+                          offset: const PdfPoint(0, 4),
+                        ),
+                      ],
                     ),
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         if (discount > 0) ...[
-                          _totalRow(localizations.subtotal, _currencyFormat.format(subtotal), color: pdfGrey800, valueColor: pdfGrey900),
-                          _totalRow(localizations.discount, "-${_currencyFormat.format(discount)}", color: pdfRed700, valueColor: pdfRed700),
+                          _totalRow(
+                            localizations.subtotal,
+                            _currencyFormat.format(subtotal),
+                            color: pdfGrey800,
+                            valueColor: pdfGrey900,
+                          ),
+                          _totalRow(
+                            localizations.discount,
+                            "-${_currencyFormat.format(discount)}",
+                            color: pdfRed700,
+                            valueColor: pdfRed700,
+                          ),
                           pw.Divider(color: pdfGrey400, thickness: 1.5),
                           pw.SizedBox(height: 8),
                         ],
                         pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                          padding: const pw.EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 8,
+                          ),
                           decoration: pw.BoxDecoration(
                             color: withOpacity(pdfBlue900, 0.1),
                             borderRadius: pw.BorderRadius.circular(6),
-                            border: pw.Border.all(color: withOpacity(pdfBlue900, 0.3)),
+                            border: pw.Border.all(
+                              color: withOpacity(pdfBlue900, 0.3),
+                            ),
                           ),
                           child: pw.Row(
-  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-  children: [
-    pw.Text(
-      localizations.totalAmountPdf,
-      style: pw.TextStyle(
-        fontWeight: pw.FontWeight.bold,
-        fontSize: 10,
-        color: PdfColors.white, // White color
-        letterSpacing: 1.2,
-      ),
-    ),
-    pw.Text(
-      "TZS ${_currencyFormat.format(total)}",
-      style: pw.TextStyle(
-        fontWeight: pw.FontWeight.bold,
-        fontSize: 15,
-        color: PdfColors.white, // White color
-        letterSpacing: 0.5,
-      ),
-    ),
-  ],
-)
-
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+                              pw.Text(
+                                localizations.totalAmountPdf,
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 10,
+                                  color: PdfColors.white, // White color
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              pw.Text(
+                                "TZS ${_currencyFormat.format(total)}",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 15,
+                                  color: PdfColors.white, // White color
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -532,25 +687,48 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text(localizations.thankYouChoosing(companyName),
-                            style: pw.TextStyle(fontSize: 15, color: pdfBlue900, fontWeight: pw.FontWeight.bold)),
+                        pw.Text(
+                          localizations.thankYouChoosing(companyName),
+                          style: pw.TextStyle(
+                            fontSize: 15,
+                            color: pdfBlue900,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
                         pw.SizedBox(height: 8),
                         if (companyAddress.isNotEmpty) ...[
-                          pw.Text("$companyAddress", 
-                              style: pw.TextStyle(fontSize: 10, color: pdfGrey700)),
+                          pw.Text(
+                            "$companyAddress",
+                            style: pw.TextStyle(
+                              fontSize: 10,
+                              color: pdfGrey700,
+                            ),
+                          ),
                           pw.SizedBox(height: 4),
                         ],
-                        if (companyPhone.isNotEmpty || companyEmail.isNotEmpty) ...[
+                        if (companyPhone.isNotEmpty ||
+                            companyEmail.isNotEmpty) ...[
                           pw.Row(
                             children: [
-                              if (companyPhone.isNotEmpty) 
-                                pw.Text("$companyPhone", 
-                                    style: pw.TextStyle(fontSize: 10, color: pdfGrey700)),
-                              if (companyPhone.isNotEmpty && companyEmail.isNotEmpty)
+                              if (companyPhone.isNotEmpty)
+                                pw.Text(
+                                  "$companyPhone",
+                                  style: pw.TextStyle(
+                                    fontSize: 10,
+                                    color: pdfGrey700,
+                                  ),
+                                ),
+                              if (companyPhone.isNotEmpty &&
+                                  companyEmail.isNotEmpty)
                                 pw.SizedBox(width: 16),
-                              if (companyEmail.isNotEmpty) 
-                                pw.Text("$companyEmail", 
-                                    style: pw.TextStyle(fontSize: 10, color: pdfBlue700)),
+                              if (companyEmail.isNotEmpty)
+                                pw.Text(
+                                  "$companyEmail",
+                                  style: pw.TextStyle(
+                                    fontSize: 10,
+                                    color: pdfBlue700,
+                                  ),
+                                ),
                             ],
                           ),
                         ],
@@ -560,8 +738,14 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text(localizations.generatedOn(DateFormat('dd MMM yyyy HH:mm').format(DateTime.now())),
-                          style: pw.TextStyle(fontSize: 9, color: pdfGrey600)),
+                      pw.Text(
+                        localizations.generatedOn(
+                          DateFormat(
+                            'dd MMM yyyy HH:mm',
+                          ).format(DateTime.now()),
+                        ),
+                        style: pw.TextStyle(fontSize: 9, color: pdfGrey600),
+                      ),
                     ],
                   ),
                 ],
@@ -580,68 +764,88 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
   pw.Widget _tableHeader(String text, {bool isRight = false}) {
     return pw.Container(
       padding: const pw.EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-      child: pw.Text(text.toUpperCase(),
-          textAlign: isRight ? pw.TextAlign.right : pw.TextAlign.left,
-          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white, fontSize: 11.5)),
+      child: pw.Text(
+        text.toUpperCase(),
+        textAlign: isRight ? pw.TextAlign.right : pw.TextAlign.left,
+        style: pw.TextStyle(
+          fontWeight: pw.FontWeight.bold,
+          color: PdfColors.white,
+          fontSize: 11.5,
+        ),
+      ),
     );
   }
 
-  pw.Widget _tableCell(String text,
-      {double padding = 12, pw.Alignment? alignment, bool bold = false, PdfColor? color}) {
+  pw.Widget _tableCell(
+    String text, {
+    double padding = 12,
+    pw.Alignment? alignment,
+    bool bold = false,
+    PdfColor? color,
+  }) {
     return pw.Container(
       padding: pw.EdgeInsets.all(padding),
-      child: pw.Text(text,
-          textAlign: alignment == null ? pw.TextAlign.left : null,
-          style: pw.TextStyle(
-              fontSize: 11,
-              fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+      child: pw.Text(
+        text,
+        textAlign: alignment == null ? pw.TextAlign.left : null,
+        style: pw.TextStyle(
+          fontSize: 11,
+          fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+        ),
+      ),
     );
   }
 
- pw.Widget _totalRow(
-  String label,
-  String value, {
-  PdfColor? color,
-  PdfColor? valueColor,
-}) {
-  return pw.Padding(
-    padding: const pw.EdgeInsets.symmetric(vertical: 6),
-    child: pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-      children: [
-        pw.Text(
-          label,
-          style: pw.TextStyle(
-            fontSize: 13,
-            color: color ?? PdfColors.white, // default white
+  pw.Widget _totalRow(
+    String label,
+    String value, {
+    PdfColor? color,
+    PdfColor? valueColor,
+  }) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 6),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            label,
+            style: pw.TextStyle(
+              fontSize: 13,
+              color: color ?? PdfColors.white, // default white
+            ),
           ),
-        ),
-        pw.Text(
-          value,
-          style: pw.TextStyle(
-            fontSize: 13,
-            fontWeight: pw.FontWeight.bold,
-            color: valueColor ?? PdfColors.white, // default white
+          pw.Text(
+            value,
+            style: pw.TextStyle(
+              fontSize: 13,
+              fontWeight: pw.FontWeight.bold,
+              color: valueColor ?? PdfColors.white, // default white
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
-
+        ],
+      ),
+    );
+  }
 
   Future<void> _printPdf() async {
     await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => _generatePdf(format, AppLocalizations.of(context)!),
+      onLayout:
+          (PdfPageFormat format) async =>
+              _generatePdf(format, AppLocalizations.of(context)!),
     );
   }
 
   Future<void> _emailPdf() async {
     setState(() => _isLoading = true);
     try {
-      final bytes = await _generatePdf(PdfPageFormat.a4, AppLocalizations.of(context)!);
-      final invoiceNum = _sale['invoice_number']?.toString() ?? _sale['server_id']?.toString() ?? "LOC-${_sale['local_id']}";
+      final bytes = await _generatePdf(
+        PdfPageFormat.a4,
+        AppLocalizations.of(context)!,
+      );
+      final invoiceNum =
+          _sale['invoice_number']?.toString() ??
+          _sale['server_id']?.toString() ??
+          "LOC-${_sale['local_id']}";
 
       List<String>? emails;
       if (_sale['customer_id'] != null) {
@@ -663,13 +867,21 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
         bytes: bytes,
         filename: 'invoice_$invoiceNum.pdf',
         subject: 'Invoice $invoiceNum',
-        body: '${AppLocalizations.of(context)!.dearCustomer},\n\n${AppLocalizations.of(context)!.invoiceEmailBody}',
+        body:
+            '${AppLocalizations.of(context)!.dearCustomer},\n\n${AppLocalizations.of(context)!.invoiceEmailBody}',
         emails: emails,
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorSharingInvoice.replaceAll('{error}', e.toString())), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.errorSharingInvoice.replaceAll('{error}', e.toString()),
+            ),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -680,67 +892,305 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
   void _showInvoiceDialog() {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: const Color(0xFF0A1B32),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: const Color(0xFF4BB4FF).withOpacity(0.1), shape: BoxShape.circle),
-                child: const Icon(Icons.receipt_long_rounded, size: 40, color: Color(0xFF4BB4FF)),
-              ),
-              const SizedBox(height: 20),
-              Text(AppLocalizations.of(context)!.invoiceReady, style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-              const SizedBox(height: 8),
-              Text('Invoice #${_sale['invoice_number']?.toString() ?? _sale['server_id']?.toString() ?? "LOC-${_sale['local_id']}"}',
-                  style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 14)),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _printPdf();
-                  },
-                  icon: const Icon(Icons.print_rounded),
-                  label: Text(AppLocalizations.of(context)!.printInvoice),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.05),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      builder:
+          (context) => Dialog(
+            backgroundColor: const Color(0xFF0A1B32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4BB4FF).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_rounded,
+                      size: 40,
+                      color: Color(0xFF4BB4FF),
+                    ),
                   ),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context)!.invoiceReady,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Invoice #${_sale['invoice_number']?.toString() ?? _sale['server_id']?.toString() ?? "LOC-${_sale['local_id']}"}',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white54,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _printPdf();
+                      },
+                      icon: const Icon(Icons.print_rounded),
+                      label: Text(AppLocalizations.of(context)!.printInvoice),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.05),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _emailPdf();
+                      },
+                      icon: const Icon(Icons.email_rounded),
+                      label: Text(AppLocalizations.of(context)!.emailInvoice),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4BB4FF),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      AppLocalizations.of(context)!.close,
+                      style: TextStyle(color: Colors.white54),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  Future<void> _editSale() async {
+    // 1. Pick Date
+    final currentTimestamp = _sale['created_at'];
+    DateTime initialDate = DateTime.now();
+    if (currentTimestamp != null) {
+      initialDate = DateTime.tryParse(currentTimestamp) ?? DateTime.now();
+    }
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF4BB4FF),
+              onPrimary: Colors.white,
+              surface: Color(0xFF0A1B32),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF0A1B32),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate == null) return;
+
+    // 2. Pick Time
+    if (!mounted) return;
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initialDate),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF4BB4FF),
+              onPrimary: Colors.white,
+              surface: Color(0xFF0A1B32),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF0A1B32),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime == null) return;
+
+    // 3. Combine
+    final newDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    // 4. Update
+    setState(() => _isLoading = true);
+    try {
+      final token = await SyncService().getAuthToken();
+      if (token == null && _sale['server_id'] != null) {
+        throw Exception('Not authenticated');
+      }
+
+      final formattedDate = newDateTime.toIso8601String();
+
+      // 4a. Update Server if it's a synced sale
+      if (_sale['server_id'] != null) {
+        // Construct items payload
+        final itemsPayload =
+            _items.map((item) {
+              return {
+                'product_id': item['product_id'] ?? item['server_product_id'],
+                'quantity': item['quantity'],
+                'unit_price': item['unit_price'],
+                'discount_amount': item['discount_amount'] ?? 0,
+                'total': item['subtotal'] ?? 0,
+              };
+            }).toList();
+
+        final updateData = {
+          'created_at': formattedDate,
+          'customer_id': _sale['customer_id'],
+          'total_amount': _sale['total_amount'],
+          'discount_amount': _sale['discount_amount'],
+          'items': itemsPayload,
+          'is_loan': _sale['is_loan'] == 1 || _sale['is_loan'] == true,
+        };
+
+        await ApiService().updateSale(_sale['server_id'], updateData, token!);
+
+        // Update local DB by server_id
+        final db = await DatabaseService().database;
+        await db.update(
+          'sales',
+          {'created_at': formattedDate},
+          where: 'server_id = ?',
+          whereArgs: [_sale['server_id']],
+        );
+      } else {
+        // 4b. Update Local only by local_id
+        final db = await DatabaseService().database;
+        await db.update(
+          'sales',
+          {'created_at': formattedDate},
+          where: 'local_id = ?',
+          whereArgs: [_sale['local_id']],
+        );
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sale date updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        setState(() {
+          _sale['created_at'] = formattedDate;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update date: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF0A1B32),
+            title: const Text('Delete Sale'),
+            content: const Text(
+              'Are you sure you want to delete this sale? This action cannot be undone.',
+            ), // meaningful message
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
                 ),
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _emailPdf();
-                  },
-                  icon: const Icon(Icons.email_rounded),
-                  label: Text(AppLocalizations.of(context)!.emailInvoice),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4BB4FF),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.close, style: TextStyle(color: Colors.white54))),
             ],
           ),
-        ),
-      ),
     );
+
+    if (confirmed == true) {
+      _deleteSale();
+    }
+  }
+
+  Future<void> _deleteSale() async {
+    setState(() => _isLoading = true);
+    try {
+      final token =
+          await SyncService()
+              .getAuthToken(); // Assuming static or singleton access
+      if (token != null && _sale['server_id'] != null) {
+        await ApiService().deleteSale(_sale['server_id'], token);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sale deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context); // Return to list
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete sale: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -758,12 +1208,43 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white), onPressed: () => Navigator.pop(context)),
-        title: Text(AppLocalizations.of(context)!.saleDetails, style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          AppLocalizations.of(context)!.saleDetails,
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
-          if (sale['server_id'] != null)
-            IconButton(icon: const Icon(Icons.cloud_sync_rounded, color: Colors.white), onPressed: _loadFromApi, tooltip: AppLocalizations.of(context)!.refresh),
-          IconButton(icon: const Icon(Icons.receipt_long_rounded, color: Colors.white), onPressed: _showInvoiceDialog, tooltip: AppLocalizations.of(context)!.invoice),
+          if (sale['server_id'] != null) ...[
+            IconButton(
+              icon: const Icon(Icons.edit_rounded, color: Colors.white),
+              onPressed: _editSale,
+              tooltip: 'Edit',
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_rounded, color: Colors.redAccent),
+              onPressed: _confirmDelete,
+              tooltip: 'Delete',
+            ),
+            IconButton(
+              icon: const Icon(Icons.cloud_sync_rounded, color: Colors.white),
+              onPressed: () => _loadFromApi(showLoading: true),
+              tooltip: 'Refresh',
+            ),
+          ],
+          IconButton(
+            icon: const Icon(Icons.receipt_long_rounded, color: Colors.white),
+            onPressed: _showInvoiceDialog,
+            tooltip: 'Invoice',
+          ),
         ],
       ),
       body: Container(
@@ -775,178 +1256,348 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
           ),
         ),
         child: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF4BB4FF)))
-              : RefreshIndicator(
-                  onRefresh: () => _loadFromApi(showLoading: false),
-                  color: const Color(0xFF4BB4FF),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header Card
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.1)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Sale #${sale['invoice_number']?.toString() ?? sale['server_id']?.toString() ?? "LOC-${sale['local_id']}"}',
-                                    style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.calendar_today_rounded, size: 12, color: Colors.white54),
-                                      const SizedBox(width: 6),
-                                      Text(formattedDate, style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 12)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: (isLoan ? Colors.orange : Colors.green).withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  isLoan ? AppLocalizations.of(context)!.loan : AppLocalizations.of(context)!.paid,
-                                  style: GoogleFonts.plusJakartaSans(color: isLoan ? Colors.orange : Colors.green, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        // Customer Info
-                        if (sale['customer_name'] != null) ...[
+          child:
+              _isLoading
+                  ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
+                  )
+                  : RefreshIndicator(
+                    onRefresh: () => _loadFromApi(showLoading: false),
+                    color: const Color(0xFF4BB4FF),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header Card
                           Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                              ),
                             ),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Icon(Icons.person_outline_rounded, color: Color(0xFF4BB4FF), size: 24),
-                                const SizedBox(width: 16),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(AppLocalizations.of(context)!.customer.toUpperCase(), style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-                                    Text(sale['customer_name'], style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                                    Text(
+                                      'Sale #${sale['invoice_number']?.toString() ?? sale['server_id']?.toString() ?? "LOC-${sale['local_id']}"}',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.calendar_today_rounded,
+                                          size: 12,
+                                          color: Colors.white54,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          formattedDate,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: Colors.white54,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: (isLoan
+                                            ? Colors.orange
+                                            : Colors.green)
+                                        .withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    isLoan
+                                        ? AppLocalizations.of(context)!.loan
+                                        : AppLocalizations.of(context)!.paid,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color:
+                                          isLoan ? Colors.orange : Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(height: 24),
-                        ],
-
-                        // Items
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(AppLocalizations.of(context)!.itemsPurchased, style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600)),
-                            Text(AppLocalizations.of(context)!.itemsCount(_items.length.toString()), style: GoogleFonts.plusJakartaSans(color: Colors.white70)),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _items.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final item = _items[index];
-                            final subtotal = (item['subtotal'] as num?)?.toDouble() ??
-                                ((item['quantity'] as num? ?? 0) * (item['unit_price'] as num? ?? 0));
-                            final itemDiscount = (item['discount_amount'] as num?)?.toDouble() ?? 0.0;
-
-                            return Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(12)),
+                          // Customer Info
+                          if (sale['customer_name'] != null) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                               child: Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(color: const Color(0xFF4BB4FF).withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                                    child: const Icon(Icons.inventory_2_outlined, color: Color(0xFF4BB4FF)),
+                                  const Icon(
+                                    Icons.person_outline_rounded,
+                                    color: Color(0xFF4BB4FF),
+                                    size: 24,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(item['product_name'] ?? AppLocalizations.of(context)!.unknownProduct, style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w500)),
-                                        Text('${item['quantity']} × ${_currencyFormat.format(item['unit_price'])}',
-                                            style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11)),
-                                        if (itemDiscount > 0)
-                                          Text('Discount: -${_currencyFormat.format(itemDiscount)}',
-                                              style: GoogleFonts.plusJakartaSans(color: Colors.greenAccent, fontSize: 10)),
-                                      ],
-                                    ),
+                                  const SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.customer.toUpperCase(),
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white54,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      Text(
+                                        sale['customer_name'],
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Text(_currencyFormat.format(subtotal),
-                                      style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)),
                                 ],
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
 
-                        const SizedBox(height: 24),
-
-                        // Summary
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [const Color.fromARGB(255, 38, 38, 39).withOpacity(0.1), Colors.transparent]),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFF4BB4FF).withOpacity(0.2)),
-                          ),
-                          child: Column(
+                          // Items
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              if (discount > 0) ...[
-                                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                  Text(AppLocalizations.of(context)!.subtotal, style: GoogleFonts.plusJakartaSans(color: Colors.white70)),
-                                  Text('TZS ${_currencyFormat.format(total + discount)}', style: GoogleFonts.plusJakartaSans(color: Colors.white)),
-                                ]),
-                                const SizedBox(height: 8),
-                                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                  Text(AppLocalizations.of(context)!.discount, style: GoogleFonts.plusJakartaSans(color: Colors.greenAccent)),
-                                  Text('- TZS ${_currencyFormat.format(discount)}', style: GoogleFonts.plusJakartaSans(color: Colors.white)),
-                                ]),
-                                const Divider(color: Colors.white10, height: 24),
-                              ],
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(AppLocalizations.of(context)!.totalAmount, style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)),
-                                  Text('TZS ${_currencyFormat.format(total)}',
-                                      style: GoogleFonts.plusJakartaSans(color: const Color.fromARGB(255, 145, 152, 156), fontSize: 18, fontWeight: FontWeight.bold)),
-                                ],
+                              Text(
+                                AppLocalizations.of(context)!.itemsPurchased,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.itemsCount(_items.length.toString()),
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white70,
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _items.length,
+                            separatorBuilder:
+                                (_, __) => const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final item = _items[index];
+                              final subtotal =
+                                  (item['subtotal'] as num?)?.toDouble() ??
+                                  ((item['quantity'] as num? ?? 0) *
+                                      (item['unit_price'] as num? ?? 0));
+                              final itemDiscount =
+                                  (item['discount_amount'] as num?)
+                                      ?.toDouble() ??
+                                  0.0;
+
+                              return Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.03),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFF4BB4FF,
+                                        ).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.inventory_2_outlined,
+                                        color: Color(0xFF4BB4FF),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item['product_name'] ??
+                                                AppLocalizations.of(
+                                                  context,
+                                                )!.unknownProduct,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${item['quantity']} × ${_currencyFormat.format(item['unit_price'])}',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color: Colors.white54,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                          if (itemDiscount > 0)
+                                            Text(
+                                              'Discount: -${_currencyFormat.format(itemDiscount)}',
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                    color: Colors.greenAccent,
+                                                    fontSize: 10,
+                                                  ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      _currencyFormat.format(subtotal),
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Summary
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color.fromARGB(
+                                    255,
+                                    38,
+                                    38,
+                                    39,
+                                  ).withOpacity(0.1),
+                                  Colors.transparent,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFF4BB4FF).withOpacity(0.2),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                if (discount > 0) ...[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        AppLocalizations.of(context)!.subtotal,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                      Text(
+                                        'TZS ${_currencyFormat.format(total + discount)}',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        AppLocalizations.of(context)!.discount,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.greenAccent,
+                                        ),
+                                      ),
+                                      Text(
+                                        '- TZS ${_currencyFormat.format(discount)}',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Divider(
+                                    color: Colors.white10,
+                                    height: 24,
+                                  ),
+                                ],
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.totalAmount,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'TZS ${_currencyFormat.format(total)}',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          145,
+                                          152,
+                                          156,
+                                        ),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
         ),
       ),
     );

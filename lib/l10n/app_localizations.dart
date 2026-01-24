@@ -1134,6 +1134,276 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not authenticated'**
   String get notAuthenticated;
+
+  /// No description provided for @financialOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial Overview'**
+  String get financialOverview;
+
+  /// No description provided for @estProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Est. Profit'**
+  String get estProfit;
+
+  /// No description provided for @expenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get expenses;
+
+  /// No description provided for @netIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Income'**
+  String get netIncome;
+
+  /// No description provided for @businessInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Business & Inventory'**
+  String get businessInventory;
+
+  /// No description provided for @totalProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Products'**
+  String get totalProducts;
+
+  /// No description provided for @accountBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Balance'**
+  String get accountBalance;
+
+  /// No description provided for @stockValueCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Value (Cost)'**
+  String get stockValueCost;
+
+  /// No description provided for @todaysPerformanceByShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Performance by Shop'**
+  String get todaysPerformanceByShop;
+
+  /// No description provided for @allShops.
+  ///
+  /// In en, this message translates to:
+  /// **'All Shops'**
+  String get allShops;
+
+  /// No description provided for @tenantName.
+  ///
+  /// In en, this message translates to:
+  /// **'Tenant Name'**
+  String get tenantName;
+
+  /// No description provided for @role.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get role;
+
+  /// No description provided for @joined.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined'**
+  String get joined;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @myShops.
+  ///
+  /// In en, this message translates to:
+  /// **'My Shops'**
+  String get myShops;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @serverSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Sync'**
+  String get serverSync;
+
+  /// No description provided for @todaySales.
+  ///
+  /// In en, this message translates to:
+  /// **'Today Sales'**
+  String get todaySales;
+
+  /// No description provided for @todayProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Today Profit'**
+  String get todayProfit;
+
+  /// No description provided for @shopSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop Settings'**
+  String get shopSettings;
+
+  /// No description provided for @viewFullReport.
+  ///
+  /// In en, this message translates to:
+  /// **'View Full Report'**
+  String get viewFullReport;
+
+  /// No description provided for @management.
+  ///
+  /// In en, this message translates to:
+  /// **'Management'**
+  String get management;
+
+  /// No description provided for @performanceToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance Today'**
+  String get performanceToday;
+
+  /// No description provided for @stockCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Count'**
+  String get stockCount;
+
+  /// No description provided for @created.
+  ///
+  /// In en, this message translates to:
+  /// **'Created At'**
+  String get created;
+
+  /// No description provided for @noShopActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'No shop activity recorded today'**
+  String get noShopActivity;
+
+  /// No description provided for @retryConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry Connection'**
+  String get retryConnection;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrong;
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// No description provided for @inventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get inventory;
+
+  /// No description provided for @refreshInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh Inventory'**
+  String get refreshInventory;
+
+  /// No description provided for @costPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost Price'**
+  String get costPrice;
+
+  /// No description provided for @sellingPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling Price'**
+  String get sellingPrice;
+
+  /// No description provided for @margin.
+  ///
+  /// In en, this message translates to:
+  /// **'MARGIN'**
+  String get margin;
+
+  /// No description provided for @waitingForSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for sync...'**
+  String get waitingForSync;
+
+  /// No description provided for @noLocalProductsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Local Products Found'**
+  String get noLocalProductsFound;
+
+  /// No description provided for @addProductsOrSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Add products or sync from server'**
+  String get addProductsOrSync;
+
+  /// No description provided for @profitAndLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Profit & Loss'**
+  String get profitAndLoss;
+
+  /// No description provided for @manageOfficers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Officers'**
+  String get manageOfficers;
+
+  /// No description provided for @productCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Categories'**
+  String get productCategories;
+
+  /// No description provided for @transactionsReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions Report'**
+  String get transactionsReport;
+
+  /// No description provided for @inventoryAndAging.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory & Aging'**
+  String get inventoryAndAging;
+
+  /// No description provided for @registerNewShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Register New Shop'**
+  String get registerNewShop;
+
+  /// No description provided for @featureComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature coming soon'**
+  String get featureComingSoon;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

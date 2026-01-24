@@ -25,16 +25,18 @@ class _PermissionsPageState extends State<PermissionsPage> {
 
   Future<void> _loadPermissions() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Get user data to get officer ID
       _userData = await DatabaseService().getUserData();
       if (_userData != null) {
         _officerId = _userData!['data']['user']['id'];
-        
+
         // Fetch permissions from database
-        _permissions = await DatabaseService().getPermissionsByOfficer(_officerId!);
-        
+        _permissions = await DatabaseService().getPermissionsByOfficer(
+          _officerId!,
+        );
+
         // Also try to refresh from API
         await _refreshPermissionsFromAPI();
       }
@@ -50,23 +52,28 @@ class _PermissionsPageState extends State<PermissionsPage> {
     try {
       final token = _userData!['data']['token'];
       final apiService = ApiService();
-      
+
       // Fetch fresh permissions from API
-      final permissionsResponse = await apiService.getOfficerPermissions(_officerId!, token);
-      
+      final permissionsResponse = await apiService.getOfficerPermissionsi(
+        _officerId!,
+        token,
+      );
+
       if (permissionsResponse['data'] != null) {
         // Save permissions to database and update local list
         await DatabaseService().saveCategoriesAndPermissions({
           'data': {
             'user': {
               'id': _officerId,
-              'permissions': permissionsResponse['data']['permissions']
-            }
-          }
+              'permissions': permissionsResponse['data']['permissions'],
+            },
+          },
         });
-        
+
         // Refresh local list
-        _permissions = await DatabaseService().getPermissionsByOfficer(_officerId!);
+        _permissions = await DatabaseService().getPermissionsByOfficer(
+          _officerId!,
+        );
         setState(() {});
       }
     } catch (e) {
@@ -96,11 +103,15 @@ class _PermissionsPageState extends State<PermissionsPage> {
               gradient: RadialGradient(
                 center: Alignment.topLeft,
                 radius: 1.5,
-                colors: [Color(0xFF1E4976), Color(0xFF0A1B32), Color(0xFF020B18)],
+                colors: [
+                  Color(0xFF1E4976),
+                  Color(0xFF0A1B32),
+                  Color(0xFF020B18),
+                ],
               ),
             ),
           ),
-          
+
           SafeArea(
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
@@ -152,9 +163,10 @@ class _PermissionsPageState extends State<PermissionsPage> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 20, 24, 120),
-                    child: _isLoading
-                        ? _buildLoadingIndicator()
-                        : _permissions.isEmpty
+                    child:
+                        _isLoading
+                            ? _buildLoadingIndicator()
+                            : _permissions.isEmpty
                             ? _buildEmptyState()
                             : _buildPermissionsList(),
                   ),
@@ -167,7 +179,10 @@ class _PermissionsPageState extends State<PermissionsPage> {
     );
   }
 
-  Widget _buildGlassIconButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildGlassIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -261,14 +276,17 @@ class _PermissionsPageState extends State<PermissionsPage> {
 
   Widget _buildPermissionsList() {
     return Column(
-      children: _permissions.map((permission) => _buildPermissionCard(permission)).toList(),
+      children:
+          _permissions
+              .map((permission) => _buildPermissionCard(permission))
+              .toList(),
     );
   }
 
   Widget _buildPermissionCard(Map<String, dynamic> permission) {
     final permissionText = permission['permission'] ?? 'Unknown Permission';
     final createdAt = permission['created_at'] ?? '';
-    
+
     // Parse and format the created date
     String formattedDate = '';
     if (createdAt.isNotEmpty) {
@@ -311,7 +329,7 @@ class _PermissionsPageState extends State<PermissionsPage> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Permission Details
                   Expanded(
                     child: Column(
@@ -327,7 +345,9 @@ class _PermissionsPageState extends State<PermissionsPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          formattedDate.isNotEmpty ? 'Granted on $formattedDate' : 'Active permission',
+                          formattedDate.isNotEmpty
+                              ? 'Granted on $formattedDate'
+                              : 'Active permission',
                           style: GoogleFonts.plusJakartaSans(
                             color: Colors.white38,
                             fontSize: 12,
@@ -336,10 +356,13 @@ class _PermissionsPageState extends State<PermissionsPage> {
                       ],
                     ),
                   ),
-                  
+
                   // Status Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
@@ -368,7 +391,7 @@ class _PermissionsPageState extends State<PermissionsPage> {
       final parts = permission.split('.');
       final action = parts.last;
       final resource = parts.length > 1 ? parts[parts.length - 2] : '';
-      
+
       switch (action.toLowerCase()) {
         case 'create':
           return 'Create $resource';
@@ -381,14 +404,29 @@ class _PermissionsPageState extends State<PermissionsPage> {
         case 'manage':
           return 'Manage $resource';
         default:
-          return permission.replaceAll('.', ' ').split(' ').map((word) => 
-            word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : ''
-          ).join(' ');
+          return permission
+              .replaceAll('.', ' ')
+              .split(' ')
+              .map(
+                (word) =>
+                    word.isNotEmpty
+                        ? word[0].toUpperCase() +
+                            word.substring(1).toLowerCase()
+                        : '',
+              )
+              .join(' ');
       }
     }
-    
-    return permission.replaceAll('_', ' ').split(' ').map((word) => 
-      word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : ''
-    ).join(' ');
+
+    return permission
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map(
+          (word) =>
+              word.isNotEmpty
+                  ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+                  : '',
+        )
+        .join(' ');
   }
 }

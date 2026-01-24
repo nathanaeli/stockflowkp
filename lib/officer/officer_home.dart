@@ -10,7 +10,6 @@ import 'package:stockflowkp/services/sync_service.dart';
 import 'package:stockflowkp/auth/login_screen.dart';
 import 'package:stockflowkp/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stockflowkp/services/locale_provider.dart';
 import 'product_page.dart';
 import 'permissions_page.dart';
 import 'category_management_page.dart';
@@ -142,14 +141,19 @@ class _OfficerHomeState extends State<OfficerHome> {
         officerId,
         token,
       );
-      
+      print(dashboardData['products']);
       await DatabaseService().saveDashboardData(dashboardData);
 
       // Verify deletion and show alert if failed
-      if (dashboardData.containsKey('deleted_product_ids') && dashboardData['deleted_product_ids'] is List) {
+      if (dashboardData.containsKey('deleted_product_ids') &&
+          dashboardData['deleted_product_ids'] is List) {
         final deletedIds = dashboardData['deleted_product_ids'] as List;
         final db = await DatabaseService().database;
-        final serverIds = deletedIds.map((id) => int.tryParse(id.toString())).whereType<int>().toList();
+        final serverIds =
+            deletedIds
+                .map((id) => int.tryParse(id.toString()))
+                .whereType<int>()
+                .toList();
 
         if (serverIds.isNotEmpty) {
           final placeholders = List.filled(serverIds.length, '?').join(',');
@@ -163,7 +167,9 @@ class _OfficerHomeState extends State<OfficerHome> {
           if (results.isNotEmpty && mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('⚠️ Sync Warning: ${results.length} products failed to delete locally.'),
+                content: Text(
+                  '⚠️ Sync Warning: ${results.length} products failed to delete locally.',
+                ),
                 backgroundColor: Colors.orange,
                 duration: const Duration(seconds: 10),
                 action: SnackBarAction(
@@ -198,46 +204,57 @@ class _OfficerHomeState extends State<OfficerHome> {
     if (_pendingSalesCount == 0) return true;
 
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0A1B32),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          AppLocalizations.of(context)?.unsyncedData ?? 'Unsynced Data',
-          style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          'You have $_pendingSalesCount unsynced sales. Refreshing will attempt to sync them first.',
-          style: GoogleFonts.plusJakartaSans(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              AppLocalizations.of(context)?.cancel ?? 'Cancel',
-              style: GoogleFonts.plusJakartaSans(color: Colors.white54),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4BB4FF),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(
-              'Sync & Refresh',
-              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    ) ?? false;
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                backgroundColor: const Color(0xFF0A1B32),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)?.unsyncedData ?? 'Unsynced Data',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                content: Text(
+                  'You have $_pendingSalesCount unsynced sales. Refreshing will attempt to sync them first.',
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white70),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text(
+                      AppLocalizations.of(context)?.cancel ?? 'Cancel',
+                      style: GoogleFonts.plusJakartaSans(color: Colors.white54),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4BB4FF),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Sync & Refresh',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
   }
 
   Future<void> _onFabRefresh() async {
     if (_isFabRefreshing) return;
-    
+
     final shouldProceed = await _confirmRefreshIfPending();
     if (!shouldProceed) return;
 
@@ -248,7 +265,6 @@ class _OfficerHomeState extends State<OfficerHome> {
       if (mounted) setState(() => _isFabRefreshing = false);
     }
   }
-  
 
   Future<void> _handleScannedQRCode(String qrCode) async {
     try {
@@ -263,7 +279,9 @@ class _OfficerHomeState extends State<OfficerHome> {
       );
 
       // Use findProductByBarcodeOrSku to check both product_items (QR) and products (Barcode/SKU)
-      final product = await DatabaseService().findProductByBarcodeOrSku(cleanCode);
+      final product = await DatabaseService().findProductByBarcodeOrSku(
+        cleanCode,
+      );
 
       if (product != null && mounted) {
         // Show success message
@@ -320,7 +338,10 @@ class _OfficerHomeState extends State<OfficerHome> {
     }
   }
 
-  Future<void> _loadDashboardData({bool checkAlerts = false, bool showLoading = true}) async {
+  Future<void> _loadDashboardData({
+    bool checkAlerts = false,
+    bool showLoading = true,
+  }) async {
     if (showLoading && mounted) setState(() => _isLoading = true);
     try {
       // Load today's sales from local database
@@ -705,68 +726,78 @@ class _OfficerHomeState extends State<OfficerHome> {
           context: context,
           locale: _localeProvider.locale,
           child: Builder(
-            builder: (context) => Scaffold(
-              key: _scaffoldKey,
-              extendBodyBehindAppBar: true,
-              drawer: _buildGlassDrawer(context),
-              body: Stack(
-                children: [
-                  // Background matches Login Page
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: RadialGradient(
-                        center: Alignment.topLeft,
-                        radius: 1.5,
-                        colors: [
-                          Color(0xFF1E4976),
-                          Color(0xFF0A1B32),
-                          Color(0xFF020B18),
-                        ],
+            builder:
+                (context) => Scaffold(
+                  key: _scaffoldKey,
+                  extendBodyBehindAppBar: true,
+                  drawer: _buildGlassDrawer(context),
+                  body: Stack(
+                    children: [
+                      // Background matches Login Page
+                      Container(
+                        decoration: const BoxDecoration(
+                          gradient: RadialGradient(
+                            center: Alignment.topLeft,
+                            radius: 1.5,
+                            colors: [
+                              Color(0xFF1E4976),
+                              Color(0xFF0A1B32),
+                              Color(0xFF020B18),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
 
-                  SafeArea(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 500),
-                      transitionBuilder: (
-                        Widget child,
-                        Animation<double> animation,
-                      ) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
-                      child: _getPage(_selectedIndex, context),
-                    ),
-                  ),
-
-                  // Floating Bottom Navigation
-                  _buildFloatingBottomNav(context),
-
-                  // Refresh FAB (Only on Dashboard)
-                  if (_selectedIndex == 0)
-                    Positioned(
-                      bottom: 120,
-                      right: 24,
-                      child: FloatingActionButton(
-                        onPressed: _isFabRefreshing ? null : _onFabRefresh,
-                        backgroundColor: const Color(0xFF4BB4FF),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        child: _isFabRefreshing
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : const Icon(Icons.refresh_rounded, color: Colors.white),
+                      SafeArea(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 500),
+                          transitionBuilder: (
+                            Widget child,
+                            Animation<double> animation,
+                          ) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                          child: _getPage(_selectedIndex, context),
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            ),
+
+                      // Floating Bottom Navigation
+                      _buildFloatingBottomNav(context),
+
+                      // Refresh FAB (Only on Dashboard)
+                      if (_selectedIndex == 0)
+                        Positioned(
+                          bottom: 120,
+                          right: 24,
+                          child: FloatingActionButton(
+                            onPressed: _isFabRefreshing ? null : _onFabRefresh,
+                            backgroundColor: const Color(0xFF4BB4FF),
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child:
+                                _isFabRefreshing
+                                    ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                    : const Icon(
+                                      Icons.refresh_rounded,
+                                      color: Colors.white,
+                                    ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
           ),
         );
       },
@@ -780,7 +811,13 @@ class _OfficerHomeState extends State<OfficerHome> {
       case 1:
         return const SalesAnalyticsPage();
       case 2:
-        return const ProductPage();
+        return LocalProductPage(
+          onRefresh: () async {
+            if (mounted) {
+              await _handleRefresh();
+            }
+          },
+        );
       case 3:
         return const CustomerManagementPage();
       default:
@@ -921,14 +958,15 @@ class _OfficerHomeState extends State<OfficerHome> {
                     final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Scaffold(
-                          body: QRCodeScanner(
-                            onQRCodeScanned: (code) {
-                              Navigator.pop(context, code);
-                            },
-                            initialMessage: 'Scan barcode',
-                          ),
-                        ),
+                        builder:
+                            (context) => Scaffold(
+                              body: QRCodeScanner(
+                                onQRCodeScanned: (code) {
+                                  Navigator.pop(context, code);
+                                },
+                                initialMessage: 'Scan barcode',
+                              ),
+                            ),
                       ),
                     );
 
@@ -952,17 +990,12 @@ class _OfficerHomeState extends State<OfficerHome> {
                       _loadDashboardData();
                     },
                   ),
+
                 _buildActionTile(
                   Icons.inventory_2_outlined,
                   AppLocalizations.of(context)?.products ?? 'Products',
                   const Color(0xFF4BB4FF),
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProductPage(),
-                        ),
-                      ),
+                  onTap: () => setState(() => _selectedIndex = 2),
                 ),
                 _buildActionTile(
                   Icons.point_of_sale_outlined,
@@ -1359,7 +1392,7 @@ class _OfficerHomeState extends State<OfficerHome> {
                         "$_pendingSalesCount ${AppLocalizations.of(context)?.unsynced ?? 'Unsynced'}",
                       ),
                       const SizedBox(width: 12),
-                      
+
                       if (_lowStockCount > 0) ...[
                         const SizedBox(width: 12),
                         _buildMiniBadge(

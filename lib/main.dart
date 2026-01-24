@@ -2,15 +2,23 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:stockflowkp/auth/landing_screen.dart';
 import 'package:stockflowkp/l10n/app_localizations.dart';
-import 'package:stockflowkp/services/sync_service.dart';
-import 'package:stockflowkp/services/shared_preferences_service.dart';
-import 'package:provider/provider.dart';
 import 'package:stockflowkp/services/locale_provider.dart';
+import 'package:stockflowkp/services/sync_service.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => LocaleProvider()..loadSavedLocale(),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -24,40 +32,11 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Timer? _syncTimer;
-  Locale _locale = const Locale('en');
-  SharedPreferencesService? _prefsService;
 
   @override
   void initState() {
     super.initState();
-    _initializeApp();
     _startBackgroundSync();
-  }
-
-  Future<void> _initializeApp() async {
-    _prefsService = await SharedPreferencesService.getInstance();
-    await _loadLanguagePreference();
-  }
-
-  Future<void> _loadLanguagePreference() async {
-    // Check if user has a saved language preference
-    final savedLanguage = await _prefsService?.getSelectedLanguage();
-    
-    if (savedLanguage != null && mounted) {
-      setState(() {
-        _locale = Locale(savedLanguage);
-      });
-    } else {
-      // Default to device language if supported, otherwise English
-      final deviceLocale = WidgetsBinding.instance.window.locale;
-      final supportedLanguages = ['en', 'sw', 'fr'];
-      
-      if (supportedLanguages.contains(deviceLocale.languageCode)) {
-        setState(() {
-          _locale = deviceLocale;
-        });
-      }
-    }
   }
 
   @override
@@ -104,19 +83,14 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _changeLanguage(Locale locale) async {
-    await _prefsService?.setSelectedLanguage(locale.languageCode);
-    setState(() {
-      _locale = locale;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final localeProvider = Provider.of<LocaleProvider>(context);
+
     return MaterialApp(
       title: 'StockFlow KP',
       debugShowCheckedModeBanner: false,
-      locale: _locale,
+      locale: localeProvider.locale,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF4BB4FF),
@@ -125,7 +99,10 @@ class _MyAppState extends State<MyApp> {
         ),
         useMaterial3: true,
         textTheme: GoogleFonts.plusJakartaSansTextTheme(
-          Theme.of(context).textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
+          Theme.of(context).textTheme.apply(
+            bodyColor: Colors.white,
+            displayColor: Colors.white,
+          ),
         ),
         scaffoldBackgroundColor: const Color(0xFF0A1B32),
         appBarTheme: const AppBarTheme(
@@ -160,7 +137,10 @@ class _MyAppState extends State<MyApp> {
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF4BB4FF)),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF4BB4FF),
+                      ),
                     ),
                   ),
                 );
@@ -169,7 +149,10 @@ class _MyAppState extends State<MyApp> {
           ],
         );
       },
-      home: LandingScreen(onLanguageChange: _changeLanguage, currentLocale: _locale),
+      home: LandingScreen(
+        onLanguageChange: (locale) => localeProvider.setLocale(locale),
+        currentLocale: localeProvider.locale,
+      ),
     );
   }
 }

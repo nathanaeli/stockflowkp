@@ -560,4 +560,139 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get notAuthenticated => 'Non authentifié';
+
+  @override
+  String get financialOverview => 'Aperçu Financier';
+
+  @override
+  String get estProfit => 'Profit Est.';
+
+  @override
+  String get expenses => 'Dépenses';
+
+  @override
+  String get netIncome => 'Revenu Net';
+
+  @override
+  String get businessInventory => 'Entreprise & Inventaire';
+
+  @override
+  String get totalProducts => 'Total Produits';
+
+  @override
+  String get accountBalance => 'Solde du Compte';
+
+  @override
+  String get stockValueCost => 'Valeur du Stock (Coût)';
+
+  @override
+  String get todaysPerformanceByShop => 'Performance Aujourd\'hui par Boutique';
+
+  @override
+  String get allShops => 'Toutes les Boutiques';
+
+  @override
+  String get tenantName => 'Nom du Locataire';
+
+  @override
+  String get role => 'Rôle';
+
+  @override
+  String get joined => 'Rejoint';
+
+  @override
+  String get editProfile => 'Modifier le Profil';
+
+  @override
+  String get myShops => 'Mes Boutiques';
+
+  @override
+  String get profile => 'Profil';
+
+  @override
+  String get settings => 'Paramètres';
+
+  @override
+  String get serverSync => 'Sync Serveur';
+
+  @override
+  String get todaySales => 'Ventes Aujourd\'hui';
+
+  @override
+  String get todayProfit => 'Profit Aujourd\'hui';
+
+  @override
+  String get shopSettings => 'Paramètres de la Boutique';
+
+  @override
+  String get viewFullReport => 'Voir le Rapport Complet';
+
+  @override
+  String get management => 'Gestion';
+
+  @override
+  String get performanceToday => 'Performance Aujourd\'hui';
+
+  @override
+  String get stockCount => 'Compte de Stock';
+
+  @override
+  String get created => 'Créé le';
+
+  @override
+  String get noShopActivity => 'Aucune activité de boutique enregistrée aujourd\'hui';
+
+  @override
+  String get retryConnection => 'Réessayer la Connexion';
+
+  @override
+  String get somethingWentWrong => 'Quelque chose s\'est mal passé';
+
+  @override
+  String get selectLanguage => 'Choisir la Langue';
+
+  @override
+  String get inventory => 'Inventaire';
+
+  @override
+  String get refreshInventory => 'Actualiser l\'Inventaire';
+
+  @override
+  String get costPrice => 'Prix de Revient';
+
+  @override
+  String get sellingPrice => 'Prix de Vente';
+
+  @override
+  String get margin => 'MARGE';
+
+  @override
+  String get waitingForSync => 'En attente de synchro...';
+
+  @override
+  String get noLocalProductsFound => 'Aucun Produit Local Trouvé';
+
+  @override
+  String get addProductsOrSync => 'Ajoutez des produits ou synchronisez depuis le serveur';
+
+  @override
+  String get profitAndLoss => 'Pertes et Profits';
+
+  @override
+  String get manageOfficers => 'Gérer les Agents';
+
+  @override
+  String get productCategories => 'Catégories de Produits';
+
+  @override
+  String get transactionsReport => 'Rapport de Transactions';
+
+  @override
+  String get inventoryAndAging => 'Inventaire et Vieillissement';
+
+  @override
+  String get registerNewShop => 'Enregistrer une Nouvelle Boutique';
+
+  @override
+  String get featureComingSoon => 'Fonctionnalité à venir';
 }
