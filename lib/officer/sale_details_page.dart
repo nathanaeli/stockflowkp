@@ -12,6 +12,7 @@ import 'package:stockflowkp/services/database_service.dart';
 import 'package:stockflowkp/services/sale_service.dart';
 import 'package:stockflowkp/services/api_service.dart';
 import 'package:stockflowkp/services/sync_service.dart';
+import 'package:barcode_widget/barcode_widget.dart';
 
 class SaleDetailsPage extends StatefulWidget {
   final Map<String, dynamic> sale;
@@ -27,6 +28,7 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
   bool _isLoading = true;
   final NumberFormat _currencyFormat = NumberFormat('#,##0.00', 'en_US');
   late Map<String, dynamic> _sale;
+  Map<String, dynamic>? _tenant;
 
   @override
   void initState() {
@@ -81,9 +83,14 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
         }
       }
 
+      // Load Tenant Details
+      final tenantRes = await db.query('tenant_account', limit: 1);
+      final tenant = tenantRes.isNotEmpty ? tenantRes.first : null;
+
       if (mounted) {
         setState(() {
           _items = enrichedItems;
+          _tenant = tenant;
           _isLoading = false;
         });
       }
@@ -1197,13 +1204,27 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
   Widget build(BuildContext context) {
     final sale = _sale;
     final date = DateTime.tryParse(sale['created_at'] ?? '') ?? DateTime.now();
-    final formattedDate = DateFormat('dd MMM yyyy, HH:mm').format(date);
+    final formattedDate = DateFormat('dd/MM/yyyy, hh:mm a').format(date);
     final isLoan = sale['is_loan'] == 1 || sale['is_loan'] == true;
     final discount = (sale['discount_amount'] as num?)?.toDouble() ?? 0.0;
     final total = (sale['total_amount'] as num?)?.toDouble() ?? 0.0;
+    // In checkout: finalTotal = totalAmount - discount.
+    // In SaleDetails previous: total was displayed as totalAmount.
+    // Let's assume 'total_amount' in DB is the final payable for simple display, or we calculate.
+    // Usually total_amount in DB is final. Let's Stick to what was there: "TZS currencyFormat(total)"
+    // But wait, the previous UI showed "Subtotal", "Discount", "Total".
+    // If I look at the ticket, it just shows "TZS 10,000.00". This is likely the Grand Total.
+
+    final invoiceNum =
+        sale['invoice_number']?.toString() ??
+        sale['server_id']?.toString() ??
+        "LOC-${sale['local_id']}";
+    final customerName = sale['customer_name'] ?? 'Walk-in Customer';
+    // tenant name? We don't have it easily here without querying tenant_account again or passing it.
+    // The previous code didn't show tenant name. I'll use "Stockflow" as placeholder or "Store".
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A1B32),
+      backgroundColor: const Color(0xFF0A1B32), // Matches app system color
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -1214,13 +1235,6 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
             color: Colors.white,
           ),
           onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          AppLocalizations.of(context)!.saleDetails,
-          style: GoogleFonts.plusJakartaSans(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
         ),
         actions: [
           if (sale['server_id'] != null) ...[
@@ -1261,337 +1275,299 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
                   ? const Center(
                     child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
                   )
-                  : RefreshIndicator(
-                    onRefresh: () => _loadFromApi(showLoading: false),
-                    color: const Color(0xFF4BB4FF),
+                  : Center(
                     child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(20),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Header Card
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.1),
+                          ClipPath(
+                            clipper: TicketClipper(),
+                            child: Container(
+                              width: double.infinity,
+                              constraints: const BoxConstraints(maxWidth: 360),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Sale #${sale['invoice_number']?.toString() ?? sale['server_id']?.toString() ?? "LOC-${sale['local_id']}"}',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Header
+                                  const SizedBox(height: 24),
+                                  // Logoish
+                                  if (_tenant != null &&
+                                      _tenant!['logo'] != null &&
+                                      (_tenant!['logo'] as String).isNotEmpty)
+                                    // TODO: Load image from path if available, else fallback
+                                    // For now, let's stick to the text representation but using tenant name
+                                    Container()
+                                  else
                                     Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        const Icon(
-                                          Icons.calendar_today_rounded,
-                                          size: 12,
-                                          color: Colors.white54,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          formattedDate,
-                                          style: GoogleFonts.plusJakartaSans(
-                                            color: Colors.white54,
-                                            fontSize: 12,
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: const Color(0xFF4BB4FF),
+                                              width: 2,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            (_tenant?['company_name']
+                                                        as String?)
+                                                    ?.toUpperCase() ??
+                                                "STOCKFLOW",
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF4BB4FF),
+                                              fontSize: 14,
+                                              letterSpacing: 1.2,
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
+                                  const SizedBox(height: 8),
+                                  // Tenant Details (Phone, Address)
+                                  if (_tenant != null) ...[
+                                    if (_tenant!['phone'] != null &&
+                                        (_tenant!['phone'] as String)
+                                            .isNotEmpty)
+                                      Text(
+                                        "${_tenant!['phone']}",
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 10,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                    if (_tenant!['address'] != null &&
+                                        (_tenant!['address'] as String)
+                                            .isNotEmpty)
+                                      Text(
+                                        "${_tenant!['address']}",
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 10,
+                                          color: Colors.black54,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    const SizedBox(height: 4),
                                   ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: (isLoan
-                                            ? Colors.orange
-                                            : Colors.green)
-                                        .withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    isLoan
-                                        ? AppLocalizations.of(context)!.loan
-                                        : AppLocalizations.of(context)!.paid,
+
+                                  Text(
+                                    "The business that listens", // Motto or slogan
                                     style: GoogleFonts.plusJakartaSans(
-                                      color:
-                                          isLoan ? Colors.orange : Colors.green,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 8,
+                                      color: const Color(0xFF4BB4FF),
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Customer Info
-                          if (sale['customer_name'] != null) ...[
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.person_outline_rounded,
-                                    color: Color(0xFF4BB4FF),
-                                    size: 24,
+                                  const SizedBox(height: 16),
+                                  const Divider(
+                                    color: Colors.black12,
+                                    height: 1,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.customer.toUpperCase(),
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: Colors.white54,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                      Text(
-                                        sale['customer_name'],
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
+                                  const SizedBox(height: 16),
+
+                                  // RISITI Circle
+                                  Text(
+                                    "RECEIPT", // RISITI
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color: Colors.black87,
+                                      letterSpacing: 1,
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                          ],
-
-                          // Items
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!.itemsPurchased,
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!.itemsCount(_items.length.toString()),
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _items.length,
-                            separatorBuilder:
-                                (_, __) => const SizedBox(height: 8),
-                            itemBuilder: (context, index) {
-                              final item = _items[index];
-                              final subtotal =
-                                  (item['subtotal'] as num?)?.toDouble() ??
-                                  ((item['quantity'] as num? ?? 0) *
-                                      (item['unit_price'] as num? ?? 0));
-                              final itemDiscount =
-                                  (item['discount_amount'] as num?)
-                                      ?.toDouble() ??
-                                  0.0;
-
-                              return Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.03),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
                                         color: const Color(
                                           0xFF4BB4FF,
-                                        ).withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.inventory_2_outlined,
-                                        color: Color(0xFF4BB4FF),
+                                        ).withOpacity(0.5),
+                                        width: 1.5,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item['product_name'] ??
-                                                AppLocalizations.of(
-                                                  context,
-                                                )!.unknownProduct,
-                                            style: GoogleFonts.plusJakartaSans(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500,
+                                    child: const Icon(
+                                      Icons
+                                          .receipt_outlined, // or check/transfer icon
+                                      color: Color(0xFF4BB4FF),
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Amount
+                                  Text(
+                                    "TZS ${_currencyFormat.format(total)}",
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 24,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+
+                                  // Details Table
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        _buildTicketRow("Type", "Sale"),
+                                        const SizedBox(height: 12),
+                                        _buildTicketRow(
+                                          "From",
+                                          (_tenant?['company_name']
+                                                  as String?) ??
+                                              "StockflowKP",
+                                        ),
+                                        const SizedBox(height: 12),
+                                        _buildTicketRow("To", customerName),
+                                        const SizedBox(height: 16),
+
+                                        // Itemized List Header
+                                        const Divider(color: Colors.black12),
+                                        const SizedBox(height: 8),
+                                        _buildTicketRow(
+                                          "Description",
+                                          "Qty  Amt",
+                                          isHeader: true,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Divider(color: Colors.black12),
+                                        const SizedBox(height: 8),
+
+                                        // Items List
+                                        ..._items.map((item) {
+                                          final name =
+                                              item['product_name'] ?? 'Unknown';
+                                          final qty = item['quantity'] ?? 0;
+                                          final price = item['subtotal'] ?? 0.0;
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 6,
                                             ),
-                                          ),
-                                          Text(
-                                            '${item['quantity']} × ${_currencyFormat.format(item['unit_price'])}',
-                                            style: GoogleFonts.plusJakartaSans(
-                                              color: Colors.white54,
-                                              fontSize: 11,
-                                            ),
-                                          ),
-                                          if (itemDiscount > 0)
-                                            Text(
-                                              'Discount: -${_currencyFormat.format(itemDiscount)}',
-                                              style:
-                                                  GoogleFonts.plusJakartaSans(
-                                                    color: Colors.greenAccent,
-                                                    fontSize: 10,
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Expanded(
+                                                  flex: 4,
+                                                  child: Text(
+                                                    name,
+                                                    style:
+                                                        GoogleFonts.plusJakartaSans(
+                                                          color: Colors.black87,
+                                                          fontSize: 12,
+                                                        ),
                                                   ),
+                                                ),
+                                                Expanded(
+                                                  flex: 3,
+                                                  child: Text(
+                                                    "$qty x ${_currencyFormat.format(price)}",
+                                                    style:
+                                                        GoogleFonts.plusJakartaSans(
+                                                          color: Colors.black87,
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                    textAlign: TextAlign.right,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
+                                          );
+                                        }),
+
+                                        const SizedBox(height: 8),
+                                        const Divider(color: Colors.black12),
+                                        const SizedBox(height: 8),
+
+                                        // Subtotals
+                                        if (discount > 0) ...[
+                                          _buildTicketRow(
+                                            "Subtotal",
+                                            _currencyFormat.format(
+                                              total + discount,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          _buildTicketRow(
+                                            "Discount",
+                                            "-${_currencyFormat.format(discount)}",
+                                            valueColor: Colors.red,
+                                          ),
+                                          const SizedBox(height: 12),
                                         ],
-                                      ),
+
+                                        _buildTicketRow(
+                                          "Total Payable",
+                                          _currencyFormat.format(total),
+                                          isHeader: true,
+                                        ),
+                                        const SizedBox(height: 16),
+
+                                        _buildTicketRow("Ref No", invoiceNum),
+                                        const SizedBox(height: 12),
+                                        _buildTicketRow("Date", formattedDate),
+                                        const SizedBox(height: 12),
+                                        _buildTicketRow(
+                                          "Status",
+                                          isLoan
+                                              ? "Pending (Loan)"
+                                              : "Completed",
+                                          valueColor:
+                                              isLoan
+                                                  ? Colors.orange
+                                                  : Colors.green,
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      _currencyFormat.format(subtotal),
+                                  ),
+
+                                  const SizedBox(height: 32),
+
+                                  // Footer Message
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF4BB4FF,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "Thank you for your business!",
                                       style: GoogleFonts.plusJakartaSans(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF0A1B32),
                                       ),
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+                                  ),
 
-                          const SizedBox(height: 24),
-
-                          // Summary
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  const Color.fromARGB(
-                                    255,
-                                    38,
-                                    38,
-                                    39,
-                                  ).withOpacity(0.1),
-                                  Colors.transparent,
+                                  const SizedBox(height: 24),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFF4BB4FF).withOpacity(0.2),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                if (discount > 0) ...[
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(context)!.subtotal,
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: Colors.white70,
-                                        ),
-                                      ),
-                                      Text(
-                                        'TZS ${_currencyFormat.format(total + discount)}',
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(context)!.discount,
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: Colors.greenAccent,
-                                        ),
-                                      ),
-                                      Text(
-                                        '- TZS ${_currencyFormat.format(discount)}',
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Divider(
-                                    color: Colors.white10,
-                                    height: 24,
-                                  ),
-                                ],
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.totalAmount,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      'TZS ${_currencyFormat.format(total)}',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: const Color.fromARGB(
-                                          255,
-                                          145,
-                                          152,
-                                          156,
-                                        ),
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
                             ),
                           ),
                         ],
@@ -1602,4 +1578,64 @@ class _SaleDetailsPageState extends State<SaleDetailsPage> {
       ),
     );
   }
+
+  Widget _buildTicketRow(
+    String label,
+    String value, {
+    Color? valueColor,
+    bool isHeader = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              color: isHeader ? Colors.black87 : Colors.black38,
+              fontSize: 12,
+              fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Text(
+            value,
+            style: GoogleFonts.plusJakartaSans(
+              color: valueColor ?? (isHeader ? Colors.black : Colors.black87),
+              fontSize: isHeader ? 14 : 12,
+              fontWeight: isHeader ? FontWeight.bold : FontWeight.w600,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class TicketClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.lineTo(0, size.height);
+    path.lineTo(size.width, size.height);
+    path.lineTo(size.width, 0);
+    path.addOval(
+      Rect.fromCircle(center: Offset(0, size.height / 3.5), radius: 12),
+    ); // Left notch
+    path.addOval(
+      Rect.fromCircle(
+        center: Offset(size.width, size.height / 3.5),
+        radius: 12,
+      ),
+    ); // Right notch
+    path.fillType = PathFillType.evenOdd;
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

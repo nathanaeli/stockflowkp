@@ -96,8 +96,10 @@ class _AddEditCustomerPageState extends State<AddEditCustomerPage> {
       bool apiSuccess = false;
       int? newServerId;
 
+      final isOnline = await syncService.hasInternetConnection();
+
       // 1. Try API if online (Send Direct to Server)
-      if (token != null) {
+      if (token != null && isOnline) {
         try {
           if (widget.customer != null &&
               widget.customer!['server_id'] != null) {

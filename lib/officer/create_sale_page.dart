@@ -6,7 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:stockflowkp/services/database_service.dart';
 import 'package:stockflowkp/services/sync_service.dart';
-import 'package:stockflowkp/utils/qr_scanner.dart';
+// import 'package:stockflowkp/utils/qr_scanner.dart';
+import 'package:stockflowkp/officer/checkout_page.dart';
 
 enum ProductSelectionMode { scan, browse, search }
 
@@ -234,7 +235,7 @@ class _CreateSalePageState extends State<CreateSalePage> {
     return enriched;
   }
 
-  Future<void> _scanBarcode() async {
+  /* Future<void> _scanBarcode() async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -251,9 +252,9 @@ class _CreateSalePageState extends State<CreateSalePage> {
     if (result != null && result is String) {
       _addProductToCartByCode(result);
     }
-  }
+  } */
 
-  Future<void> _addProductToCartByCode(String code) async {
+  /* Future<void> _addProductToCartByCode(String code) async {
     setState(() => _isLoading = true);
     try {
       final product = await DatabaseService().findProductByBarcodeOrSku(code);
@@ -303,7 +304,7 @@ class _CreateSalePageState extends State<CreateSalePage> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
+  } */
 
   void _addToCart(Map<String, dynamic> product) {
     setState(() {
@@ -780,317 +781,31 @@ class _CreateSalePageState extends State<CreateSalePage> {
     }
   }
 
-  DateTime? _selectedDate;
-
-  void _showCheckoutDialog() {
-    _isLoan = false;
-    _selectedDate = null;
-    double discount = 0.0;
-    String note = _initialNote;
-    final discountController = TextEditingController();
-    final noteController = TextEditingController(text: _initialNote);
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => StatefulBuilder(
-            builder: (context, setDialogState) {
-              final double finalTotal = (_totalAmount - discount).clamp(
-                0.0,
-                double.infinity,
-              );
-
-              return AlertDialog(
-                backgroundColor: const Color(0xFF0A1B32),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                title: Text(
-                  'Confirm Checkout',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Total Amount',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white54,
-                                fontSize: 11,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _currencyFormat.format(finalTotal),
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (discount > 0)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  'Discount: -${_currencyFormat.format(discount)}',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.greenAccent,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Date Picker
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.transparent),
-                        ),
-                        child: ListTile(
-                          leading: const Icon(
-                            Icons.calendar_today,
-                            color: Colors.white54,
-                            size: 20,
-                          ),
-                          title: Text(
-                            _selectedDate == null
-                                ? 'Select Date (Default: Now)'
-                                : DateFormat(
-                                  'MMM d, yyyy - h:mm a',
-                                ).format(_selectedDate!),
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                          onTap: () async {
-                            final date = await showDatePicker(
-                              context: context,
-                              initialDate: _selectedDate ?? DateTime.now(),
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime.now(),
-                            );
-                            if (date != null) {
-                              // ignore: use_build_context_synchronously
-                              final time = await showTimePicker(
-                                context: context,
-                                initialTime: TimeOfDay.fromDateTime(
-                                  _selectedDate ?? DateTime.now(),
-                                ),
-                              );
-                              if (time != null) {
-                                setDialogState(() {
-                                  _selectedDate = DateTime(
-                                    date.year,
-                                    date.month,
-                                    date.day,
-                                    time.hour,
-                                    time.minute,
-                                  );
-                                });
-                              }
-                            }
-                          },
-                        ),
-                      ),
-
-                      // Discount Field
-                      TextField(
-                        controller: discountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: 'Discount Amount',
-                          labelStyle: const TextStyle(
-                            color: Colors.white54,
-                            fontSize: 13,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.05),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.discount_outlined,
-                            color: Colors.white54,
-                            size: 18,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                        ),
-                        onChanged: (val) {
-                          final d = double.tryParse(val) ?? 0.0;
-                          setDialogState(() => discount = d);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Note Field
-                      TextField(
-                        controller: noteController,
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: 'Sale Note / Comment',
-                          labelStyle: const TextStyle(
-                            color: Colors.white54,
-                            fontSize: 13,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.05),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.note_alt_outlined,
-                            color: Colors.white54,
-                            size: 18,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                        ),
-                        onChanged: (val) {
-                          note = val;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-
-                      Container(
-                        decoration: BoxDecoration(
-                          color:
-                              _isLoan
-                                  ? Colors.orange.withOpacity(0.1)
-                                  : Colors.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color:
-                                _isLoan
-                                    ? Colors.orange.withOpacity(0.5)
-                                    : Colors.transparent,
-                          ),
-                        ),
-                        child: CheckboxListTile(
-                          title: Text(
-                            'Mark as Loan',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                          subtitle:
-                              _isLoan
-                                  ? Text(
-                                    'Payment pending',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: Colors.orange,
-                                      fontSize: 11,
-                                    ),
-                                  )
-                                  : null,
-                          value: _isLoan,
-                          onChanged: (val) {
-                            setDialogState(() => _isLoan = val ?? false);
-                          },
-                          activeColor: Colors.orange,
-                          checkColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Cancel',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white54,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (discount > _totalAmount) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Discount cannot exceed total amount',
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-                      Navigator.pop(context);
-                      _processCheckout(
-                        discount,
-                        note,
-                        customDate: _selectedDate,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4BB4FF),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                    ),
-                    child: Text(
-                      'Confirm Sale',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+  void _showCheckoutDialog() async {
+    // Navigate to separate checkout page
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => CheckoutPage(
+              totalAmount: _totalAmount,
+              cartItems: _cart,
+              customer: _selectedCustomer,
+              initialNote: _initialNote,
+            ),
+      ),
     );
+
+    if (result != null &&
+        result is Map<String, dynamic> &&
+        result['confirmed'] == true) {
+      _isLoan = result['isLoan'] ?? false;
+      _processCheckout(
+        result['discount'] ?? 0.0,
+        result['note'] ?? '',
+        customDate: result['date'],
+      );
+    }
   }
 
   Future<void> _processCheckout(
@@ -1490,15 +1205,6 @@ class _CreateSalePageState extends State<CreateSalePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: _buildActionButton(
-                          icon: Icons.qr_code_scanner_rounded,
-                          label: 'Scan',
-                          color: const Color(0xFF4BB4FF),
-                          onTap: _scanBarcode,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
                       Expanded(
                         child: _buildActionButton(
                           icon: Icons.search_rounded,

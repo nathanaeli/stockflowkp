@@ -15,6 +15,95 @@ import 'add_stock_page.dart';
 import 'reduce_stock_page.dart';
 import 'Advancedpage/addingproduct.dart';
 
+// Skeleton loading widget for animated loading state
+class ProductCardSkeleton extends StatefulWidget {
+  const ProductCardSkeleton({super.key});
+
+  @override
+  State<ProductCardSkeleton> createState() => _ProductCardSkeletonState();
+}
+
+class _ProductCardSkeletonState extends State<ProductCardSkeleton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
+    _animation = Tween<double>(begin: 0.6, end: 1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 16,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 12,
+                        width: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class LocalProductPage extends StatefulWidget {
   final Future<void> Function()? onRefresh;
   const LocalProductPage({super.key, this.onRefresh});
@@ -235,8 +324,14 @@ class _LocalProductPageState extends State<LocalProductPage> {
 
       body:
           _isLoading
-              ? const Center(
-                child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
+              ? Padding(
+                padding: EdgeInsets.only(top: topPadding),
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  itemCount: 5,
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) => const ProductCardSkeleton(),
+                ),
               )
               : Padding(
                 padding: EdgeInsets.only(top: topPadding),
@@ -283,6 +378,9 @@ class _LocalProductPageState extends State<LocalProductPage> {
     final double buyPrice = (product['base_price'] as num?)?.toDouble() ?? 0.0;
     final double profit = sellPrice - buyPrice;
     final double margin = buyPrice > 0 ? (profit / buyPrice) * 100 : 100.0;
+    final int stock = product['current_stock'] as int? ?? 0;
+    final bool isLowStock = stock <= 5 && stock > 0;
+    final bool isOutOfStock = stock == 0;
 
     // Check if item is only on phone (pending) or on server
     final bool isPending =
@@ -294,14 +392,29 @@ class _LocalProductPageState extends State<LocalProductPage> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withOpacity(0.08),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color:
                   isPending
-                      ? Colors.orange.withOpacity(0.3)
-                      : Colors.white.withOpacity(0.08),
+                      ? Colors.orange.withOpacity(0.4)
+                      : isOutOfStock
+                      ? Colors.red.withOpacity(0.2)
+                      : isLowStock
+                      ? Colors.amber.withOpacity(0.2)
+                      : Colors.white.withOpacity(0.1),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: isPending
+                    ? Colors.orange.withOpacity(0.1)
+                    : isOutOfStock
+                    ? Colors.red.withOpacity(0.08)
+                    : Colors.blue.withOpacity(0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -334,50 +447,80 @@ class _LocalProductPageState extends State<LocalProductPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.1),
+                                  ),
+                                ),
+                                child: Text(
                                   'SKU: ${product['sku'] ?? 'N/A'}',
                                   style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 11,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white54,
+                                    color: Colors.white60,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  width: 1,
-                                  height: 10,
-                                  color: Colors.white12,
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
-                                const SizedBox(width: 8),
-                                const Icon(
-                                  Icons.inventory_2_rounded,
-                                  size: 12,
-                                  color: Colors.white54,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${product['current_stock'] ?? 0}',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white54,
+                                decoration: BoxDecoration(
+                                  color: isOutOfStock
+                                      ? Colors.red.withOpacity(0.15)
+                                      : isLowStock
+                                      ? Colors.amber.withOpacity(0.15)
+                                      : Colors.green.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isOutOfStock
+                                        ? Colors.red.withOpacity(0.3)
+                                        : isLowStock
+                                        ? Colors.amber.withOpacity(0.3)
+                                        : Colors.green.withOpacity(0.3),
                                   ),
                                 ),
-                              ],
-                            ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.inventory_2_rounded,
+                                      size: 12,
+                                      color: isOutOfStock
+                                          ? Colors.red
+                                          : isLowStock
+                                          ? Colors.amber
+                                          : Colors.green,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${product['current_stock'] ?? 0}',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: isOutOfStock
+                                            ? Colors.red
+                                            : isLowStock
+                                            ? Colors.amber
+                                            : Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
 
                           const SizedBox(height: 8),
@@ -567,16 +710,29 @@ class _LocalProductPageState extends State<LocalProductPage> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(8),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        hoverColor: color.withOpacity(0.1),
+        splashColor: color.withOpacity(0.2),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: color.withOpacity(0.2), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(icon, size: 16, color: color),
         ),
-        child: Icon(icon, size: 16, color: color),
       ),
     );
   }
@@ -871,34 +1027,57 @@ class _LocalProductPageState extends State<LocalProductPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF4BB4FF).withOpacity(0.15),
+                  const Color(0xFF0277BD).withOpacity(0.1),
+                ],
+              ),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              border: Border.all(
+                color: const Color(0xFF4BB4FF).withOpacity(0.2),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF4BB4FF).withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Icon(
               Icons.inventory_2_outlined,
-              size: 56,
-              color: Colors.white24,
+              size: 64,
+              color: const Color(0xFF4BB4FF).withOpacity(0.6),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           Text(
             AppLocalizations.of(context)!.noLocalProductsFound,
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.addProductsOrSync,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              color: Colors.white54,
-              fontWeight: FontWeight.w500,
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              AppLocalizations.of(context)!.addProductsOrSync,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                color: Colors.white60,
+                fontWeight: FontWeight.w500,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],

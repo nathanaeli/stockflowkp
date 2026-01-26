@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stockflowkp/services/api_service.dart';
 import 'package:stockflowkp/services/sync_service.dart';
@@ -185,10 +187,6 @@ class _EditProductPageState extends State<EditProductPage> {
         );
       }
 
-      // 2. UPDATE LOCAL DATABASE
-      // Determine which table the product came from based on local_id type
-      // int -> products table (local/active)
-      // String -> productsinfo table (server cache)
       final dbService = DatabaseService();
       final db = await dbService.database;
 
@@ -267,16 +265,25 @@ class _EditProductPageState extends State<EditProductPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white, size: 28),
-          onPressed: () => Navigator.of(context).pop(),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.close, color: Colors.white, size: 24),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
         title: Text(
           'Edit Product',
           style: GoogleFonts.plusJakartaSans(
             color: Colors.white,
             fontWeight: FontWeight.w700,
-            fontSize: 20,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
@@ -303,7 +310,7 @@ class _EditProductPageState extends State<EditProductPage> {
                     'Update product details',
                     style: GoogleFonts.plusJakartaSans(
                       color: Colors.white70,
-                      fontSize: 16,
+                      fontSize: 13,
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -338,15 +345,29 @@ class _EditProductPageState extends State<EditProductPage> {
                   _buildUnitDropdown(),
                   const SizedBox(height: 30),
 
-                  Text(
-                    'Pricing',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  // Pricing Section Header
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4BB4FF),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Pricing',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // Base Price
                   _buildTextField(
@@ -378,16 +399,16 @@ class _EditProductPageState extends State<EditProductPage> {
 
                   // SKU (Read-only for edit)
                   Container(
-                    padding: const EdgeInsets.all(18),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.15)),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.tag, color: Colors.white70, size: 24),
-                        const SizedBox(width: 12),
+                        Icon(Icons.tag, color: Colors.white70, size: 20),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,15 +417,15 @@ class _EditProductPageState extends State<EditProductPage> {
                                 'SKU (Read-only)',
                                 style: GoogleFonts.plusJakartaSans(
                                   color: Colors.white70,
-                                  fontSize: 14,
+                                  fontSize: 11,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Text(
                                 _skuController.text,
                                 style: GoogleFonts.plusJakartaSans(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -419,13 +440,13 @@ class _EditProductPageState extends State<EditProductPage> {
                   // Active Switch
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 18,
+                      horizontal: 16,
+                      vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.15)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -437,22 +458,26 @@ class _EditProductPageState extends State<EditProductPage> {
                               'Product Status',
                               style: GoogleFonts.plusJakartaSans(
                                 color: Colors.white70,
-                                fontSize: 14,
+                                fontSize: 11,
                               ),
                             ),
                             Text(
                               _isActive ? 'Active' : 'Inactive',
                               style: GoogleFonts.plusJakartaSans(
                                 color: Colors.white,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
-                        Switch(
-                          value: _isActive,
-                          onChanged: (val) => setState(() => _isActive = val),
-                          activeColor: const Color(0xFF4BB4FF),
+                        Transform.scale(
+                          scale: 0.8,
+                          child: Switch(
+                            value: _isActive,
+                            onChanged: (val) => setState(() => _isActive = val),
+                            activeColor: const Color(0xFF4BB4FF),
+                          ),
                         ),
                       ],
                     ),
@@ -462,31 +487,73 @@ class _EditProductPageState extends State<EditProductPage> {
                   // Update Button
                   SizedBox(
                     width: double.infinity,
-                    height: 58,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _updateProduct,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4BB4FF),
-                        foregroundColor: Colors.white,
-                        elevation: 12,
-                        shadowColor: const Color(0xFF4BB4FF).withOpacity(0.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                    height: 50,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF4BB4FF),
+                            const Color(0xFF0277BD),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4BB4FF).withOpacity(0.4),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _isLoading ? null : _updateProduct,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Center(
+                            child:
+                                _isLoading
+                                    ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white.withOpacity(0.9),
+                                                ),
+                                            strokeWidth: 2.0,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          'Updating...',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                    : Text(
+                                      'Update Product',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                          ),
                         ),
                       ),
-                      child:
-                          _isLoading
-                              ? const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 3,
-                              )
-                              : Text(
-                                'Update Product',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -514,8 +581,9 @@ class _EditProductPageState extends State<EditProductPage> {
           label,
           style: GoogleFonts.plusJakartaSans(
             color: Colors.white70,
-            fontSize: 15,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 8),
@@ -524,31 +592,49 @@ class _EditProductPageState extends State<EditProductPage> {
           validator: validator,
           keyboardType: keyboardType,
           maxLines: maxLines,
-          style: GoogleFonts.plusJakartaSans(color: Colors.white),
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.plusJakartaSans(color: Colors.white38),
+            hintStyle: GoogleFonts.plusJakartaSans(
+              color: Colors.white30,
+              fontSize: 13,
+            ),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.08),
+            fillColor: Colors.white.withOpacity(0.05),
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 0,
+              minHeight: 0,
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.15)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFF4BB4FF), width: 2),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFF4BB4FF),
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Colors.redAccent),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 16,
+              horizontal: 16,
+              vertical: 14,
             ),
           ),
         ),
@@ -564,85 +650,148 @@ class _EditProductPageState extends State<EditProductPage> {
           'Product Image (Optional)',
           style: GoogleFonts.plusJakartaSans(
             color: Colors.white70,
-            fontSize: 15,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             children: [
-              // Image Preview
-              if (_selectedImage != null)
-                Container(
-                  height: 120,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white.withOpacity(0.1),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                  ),
-                )
-              else if (widget.product['image'] != null)
-                Container(
-                  height: 120,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white.withOpacity(0.1),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      File(widget.product['image']),
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (_, __, ___) => const Icon(
-                            Icons.broken_image,
-                            color: Colors.white54,
+              // Image Preview with Animation
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 400),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                child:
+                    _selectedImage != null
+                        ? Container(
+                          key: const ValueKey('selectedImage'),
+                          height: 140,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.15),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  height: 120,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white.withOpacity(0.1),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.image_outlined,
-                          color: Colors.white54,
-                          size: 32,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No image selected',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white54,
-                            fontSize: 14,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.file(
+                              _selectedImage!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        )
+                        : widget.product['image'] != null
+                        ? Container(
+                          key: const ValueKey('existingImage'),
+                          height: 140,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.15),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.file(
+                              File(widget.product['image']),
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (_, __, ___) => Container(
+                                    color: Colors.white.withOpacity(0.06),
+                                    child: const Icon(
+                                      Icons.broken_image,
+                                      color: Colors.white54,
+                                      size: 36,
+                                    ),
+                                  ),
+                            ),
+                          ),
+                        )
+                        : Container(
+                          key: const ValueKey('noImage'),
+                          height: 140,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            color: Colors.white.withOpacity(0.05),
+                            border: Border.all(
+                              color: Color(0xFF4BB4FF).withOpacity(0.3),
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.1),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(0xFF4BB4FF).withOpacity(0.15),
+                                  ),
+                                  child: const Icon(
+                                    Icons.image_outlined,
+                                    color: Color(0xFF4BB4FF),
+                                    size: 32,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No image selected',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Tap a button below to add',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.white54,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
+              ),
               const SizedBox(height: 16),
 
               // Action Buttons
@@ -651,66 +800,147 @@ class _EditProductPageState extends State<EditProductPage> {
                 children: [
                   // Gallery Button
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pickImageFromGallery,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.1),
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withOpacity(0.3)),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _pickImageFromGallery,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.blue.withOpacity(0.3),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.photo_library,
+                                color: const Color(0xFF4BB4FF),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Gallery',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: const Color(0xFF4BB4FF),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      icon: Icon(Icons.photo_library, size: 20),
-                      label: Text(
-                        'Gallery',
-                        style: GoogleFonts.plusJakartaSans(fontSize: 14),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
 
                   // Camera Button
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _takePhoto,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.1),
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withOpacity(0.3)),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _takePhoto,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.green.withOpacity(0.3),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.green.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.camera_alt,
+                                color: Colors.green.withOpacity(0.7),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Camera',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.green.withOpacity(0.7),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      icon: Icon(Icons.camera_alt, size: 20),
-                      label: Text(
-                        'Camera',
-                        style: GoogleFonts.plusJakartaSans(fontSize: 14),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
 
                   // Remove Button
                   if (_selectedImage != null || widget.product['image'] != null)
                     Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _removeImage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.withOpacity(0.2),
-                          foregroundColor: Colors.white,
-                          side: BorderSide(color: Colors.red.withOpacity(0.5)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _removeImage,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.red.withOpacity(0.3),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.delete,
+                                  color: Colors.red.withOpacity(0.7),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Remove',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.red.withOpacity(0.7),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        icon: Icon(Icons.delete, size: 20),
-                        label: Text(
-                          'Remove',
-                          style: GoogleFonts.plusJakartaSans(fontSize: 14),
                         ),
                       ),
                     ),
@@ -723,7 +953,7 @@ class _EditProductPageState extends State<EditProductPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white.withOpacity(0.2)),
                 ),
@@ -743,7 +973,7 @@ class _EditProductPageState extends State<EditProductPage> {
                             'Scan QR Code',
                             style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFF4BB4FF),
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -757,7 +987,7 @@ class _EditProductPageState extends State<EditProductPage> {
                                   _qrCodeData != null
                                       ? Colors.white
                                       : Colors.white54,
-                              fontSize: 12,
+                              fontSize: 11,
                             ),
                           ),
                         ],
@@ -788,38 +1018,53 @@ class _EditProductPageState extends State<EditProductPage> {
           'Unit *',
           style: GoogleFonts.plusJakartaSans(
             color: Colors.white70,
-            fontSize: 15,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.3)),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedUnit,
-              isExpanded: true,
-              icon: const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: Colors.white70,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.15)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedUnit,
+                isExpanded: true,
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.white54,
+                  size: 20,
+                ),
+                dropdownColor: const Color(0xFF0A1B32),
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                items:
+                    _units.map((unit) {
+                      return DropdownMenuItem(value: unit, child: Text(unit));
+                    }).toList(),
+                onChanged: (value) {
+                  if (value != null) setState(() => _selectedUnit = value);
+                },
               ),
-              dropdownColor: const Color(0xFF0A1B32),
-              style: GoogleFonts.plusJakartaSans(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-              items:
-                  _units.map((unit) {
-                    return DropdownMenuItem(value: unit, child: Text(unit));
-                  }).toList(),
-              onChanged: (value) {
-                if (value != null) setState(() => _selectedUnit = value);
-              },
             ),
           ),
         ),

@@ -14,7 +14,7 @@ class DatabaseService {
   DatabaseService._internal();
 
   static Database? _database;
-  static const _databaseName = 'apptwo.db';
+  static const _databaseName = 'updatedinfo.db';
   static const _databaseVersion = 36;
 
   // Sync Status Constants
@@ -1671,6 +1671,10 @@ class DatabaseService {
 
     record['sync_status'] = statusSynced;
     _convertBooleansToInts(record);
+    
+    // Remove fields that don't exist in the sales table schema to prevent update errors
+    record.removeWhere((key, value) => !_isValidField(key, record, 'sales'));
+    
     record.removeWhere((key, value) => value == null);
 
     final now = DateTime.now().toIso8601String();
@@ -2194,6 +2198,11 @@ class DatabaseService {
     return null;
   }
 
+  Future<void> deleteUserData() async {
+    final db = await database;
+    await db.delete('user_data');
+  }
+
   Future<void> logout() async {
     final db = await database;
     await db.delete('user_data');
@@ -2637,7 +2646,84 @@ class DatabaseService {
   Future<void> saveCustomers(List<dynamic> customers) async {
     final db = await database;
     await db.transaction((txn) async {
-      await _bulkSmartUpsert(txn, 'customers', customers, 'server_id');
+      for (var item in customers) {
+        final data = item as Map<String, dynamic>;
+        final record = _prepareRecordForUpsert(data, 'customers');
+
+        final serverId = record['server_id'];
+        if (serverId == null) continue;
+
+        // 1. Try to find by server_id
+        final existingByServerId = await txn.query(
+          'customers',
+          where: 'server_id = ?',
+          whereArgs: [serverId],
+        );
+
+        if (existingByServerId.isNotEmpty) {
+          // Update existing synced record
+          await txn.update(
+            'customers',
+            record,
+            where: 'server_id = ?',
+            whereArgs: [serverId],
+          );
+        } else {
+          // 2. Try to find local duplicate (server_id IS NULL)
+          List<Map<String, dynamic>> potentialMatches = [];
+
+          // Match Priority: Phone > Email > Name
+          final String? phone = record['phone'];
+          final String? email = record['email'];
+          final String? name = record['name'];
+
+          if (phone != null && phone.toString().trim().isNotEmpty) {
+            potentialMatches = await txn.query(
+              'customers',
+              where: 'phone = ? AND server_id IS NULL',
+              whereArgs: [phone],
+            );
+          }
+
+          if (potentialMatches.isEmpty &&
+              email != null &&
+              email.toString().trim().isNotEmpty) {
+            potentialMatches = await txn.query(
+              'customers',
+              where: 'email = ? AND server_id IS NULL',
+              whereArgs: [email],
+            );
+          }
+
+          // Fallback: Match by Name to prevent duplicates for quick entries
+          if (potentialMatches.isEmpty &&
+              name != null &&
+              name.toString().trim().isNotEmpty) {
+            potentialMatches = await txn.query(
+              'customers',
+              where: 'name LIKE ? AND server_id IS NULL',
+              whereArgs: [name],
+            );
+          }
+
+          if (potentialMatches.isNotEmpty) {
+            final localId = potentialMatches.first['local_id'];
+            await txn.update(
+              'customers',
+              record,
+              where: 'local_id = ?',
+              whereArgs: [localId],
+            );
+          } else {
+            // 3. Insert new record
+            await txn.insert(
+              'customers',
+              record,
+              conflictAlgorithm: ConflictAlgorithm.ignore,
+            );
+          }
+        }
+      }
     });
   }
 

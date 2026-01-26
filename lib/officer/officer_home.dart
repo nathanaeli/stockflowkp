@@ -7,7 +7,6 @@ import 'package:stockflowkp/officer/sale_loans_page.dart';
 import 'package:stockflowkp/services/database_service.dart';
 import 'package:stockflowkp/services/api_service.dart';
 import 'package:stockflowkp/services/sync_service.dart';
-import 'package:stockflowkp/auth/login_screen.dart';
 import 'package:stockflowkp/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'product_page.dart';
@@ -29,6 +28,7 @@ import 'backup_restore_page.dart';
 import 'package:stockflowkp/utils/qr_scanner.dart';
 import 'add_product_page.dart';
 import 'product_details_page.dart';
+import 'package:stockflowkp/auth/landing_screen.dart';
 
 // Simple Locale Provider
 class LocaleProvider extends ChangeNotifier {
@@ -349,7 +349,6 @@ class _OfficerHomeState extends State<OfficerHome> {
       await _loadPendingSalesCount();
       await _checkLowStock(showNotification: checkAlerts);
     } catch (e) {
-      print('Failed to load dashboard data: $e');
     } finally {
       if (showLoading && mounted) setState(() => _isLoading = false);
     }
@@ -437,182 +436,8 @@ class _OfficerHomeState extends State<OfficerHome> {
     return _permissions.contains(permission);
   }
 
-  @override
-  void dispose() {
-    _syncTimer?.cancel();
-    _localeProvider.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleSignOut() async {
-    Navigator.pop(context); // Close drawer
-
-    if (_pendingSalesCount > 0) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          bool isSyncing = false;
-          return StatefulBuilder(
-            builder: (context, setStateDialog) {
-              return AlertDialog(
-                backgroundColor: const Color(0xFF0A1B32),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                title: Text(
-                  AppLocalizations.of(context)?.unsyncedData ?? 'Unsynced Data',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                content: Text(
-                  AppLocalizations.of(
-                        context,
-                      )?.unsyncedWarning(_pendingSalesCount) ??
-                      'You have $_pendingSalesCount pending items that haven\'t been synced yet. Signing out now will delete this data permanently.',
-                  style: GoogleFonts.plusJakartaSans(color: Colors.white70),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: isSyncing ? null : () => Navigator.pop(context),
-                    child: Text(
-                      AppLocalizations.of(context)?.cancel ?? 'Cancel',
-                      style: GoogleFonts.plusJakartaSans(color: Colors.white54),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed:
-                        isSyncing
-                            ? null
-                            : () {
-                              Navigator.pop(context);
-                              _performLogout();
-                            },
-                    child: Text(
-                      AppLocalizations.of(context)?.deleteSignOut ??
-                          'Delete & Sign Out',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed:
-                        isSyncing
-                            ? null
-                            : () async {
-                              setStateDialog(() => isSyncing = true);
-                              try {
-                                if (_userData != null &&
-                                    _userData!['data'] != null) {
-                                  final token = _userData!['data']['token'];
-                                  await SyncService().syncAllPendingSales(
-                                    token,
-                                  );
-                                  await _loadPendingSalesCount();
-
-                                  if (_pendingSalesCount == 0) {
-                                    if (mounted) {
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            AppLocalizations.of(
-                                                  context,
-                                                )?.syncSuccessful ??
-                                                'Sync successful! Signing out...',
-                                          ),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
-                                      await Future.delayed(
-                                        const Duration(seconds: 1),
-                                      );
-                                      _performLogout();
-                                    }
-                                  } else {
-                                    if (mounted) {
-                                      setStateDialog(() => isSyncing = false);
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            AppLocalizations.of(
-                                                  context,
-                                                )?.syncFailed(
-                                                  _pendingSalesCount,
-                                                ) ??
-                                                'Sync failed. $_pendingSalesCount items remaining.',
-                                          ),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                }
-                              } catch (e) {
-                                if (mounted) {
-                                  setStateDialog(() => isSyncing = false);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        AppLocalizations.of(
-                                              context,
-                                            )?.syncError(e) ??
-                                            'Sync error: $e',
-                                      ),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4BB4FF),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    child:
-                        isSyncing
-                            ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            )
-                            : Text(
-                              AppLocalizations.of(context)?.syncSignOut ??
-                                  'Sync & Sign Out',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-    } else {
-      _showLogoutConfirmation();
-    }
-  }
-
-  void _showLogoutConfirmation() {
-    showDialog(
+  Future<void> _handleLogout() async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
           (context) => AlertDialog(
@@ -621,36 +446,32 @@ class _OfficerHomeState extends State<OfficerHome> {
               borderRadius: BorderRadius.circular(20),
             ),
             title: Text(
-              AppLocalizations.of(context)?.signOut ?? 'Sign Out',
+              'Logout',
               style: GoogleFonts.plusJakartaSans(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
             content: Text(
-              AppLocalizations.of(context)?.confirmSignOut ??
-                  'Are you sure you want to sign out? All local data will be cleared.',
+              'Are you sure you want to logout?',
               style: GoogleFonts.plusJakartaSans(color: Colors.white70),
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context, false),
                 child: Text(
-                  'Cancel',
+                  AppLocalizations.of(context)?.cancel ?? 'Cancel',
                   style: GoogleFonts.plusJakartaSans(color: Colors.white54),
                 ),
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _performLogout();
-                },
+                onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
                   foregroundColor: Colors.white,
                 ),
                 child: Text(
-                  'Sign Out',
+                  'Logout',
                   style: GoogleFonts.plusJakartaSans(
                     fontWeight: FontWeight.bold,
                   ),
@@ -659,148 +480,125 @@ class _OfficerHomeState extends State<OfficerHome> {
             ],
           ),
     );
-  }
 
-  Future<void> _performLogout() async {
-    setState(() => _isLoading = true);
-    try {
-      final db = await DatabaseService().database;
-      final tables = [
-        'sales',
-        'sale_items',
-        'products',
-        'categories',
-        'customers',
-        'stocks',
-        'officer',
-        'user_data',
-        'tenant_account',
-        'proforma_invoices',
-        'cart_drafts',
-        'product_items',
-        'stock_movements',
-      ];
-
-      for (var table in tables) {
-        try {
-          final check = await db.rawQuery(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-            [table],
-          );
-          if (check.isNotEmpty) {
-            await db.delete(table);
-          }
-        } catch (e) {
-          debugPrint('Error clearing table $table: $e');
-        }
-      }
+    if (confirm == true) {
+      // Clear user data
+      await DatabaseService().deleteUserData();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
 
       if (mounted) {
+        // Navigate to Landing Screen
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)?.logoutFailed(e) ??
-                  'Logout failed: $e',
-            ),
-            backgroundColor: Colors.red,
+          MaterialPageRoute(
+            builder:
+                (context) => LandingScreen(
+                  currentLocale: _localeProvider.locale,
+                  onLanguageChange:
+                      (locale) => _localeProvider.setLocale(locale),
+                ),
           ),
+          (route) => false,
         );
       }
     }
   }
 
   @override
+  void dispose() {
+    _syncTimer?.cancel();
+    _localeProvider.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _localeProvider,
-      builder: (context, child) {
-        return Localizations.override(
-          context: context,
-          locale: _localeProvider.locale,
-          child: Builder(
-            builder:
-                (context) => Scaffold(
-                  key: _scaffoldKey,
-                  extendBodyBehindAppBar: true,
-                  drawer: _buildGlassDrawer(context),
-                  body: Stack(
-                    children: [
-                      // Background matches Login Page
-                      Container(
-                        decoration: const BoxDecoration(
-                          gradient: RadialGradient(
-                            center: Alignment.topLeft,
-                            radius: 1.5,
-                            colors: [
-                              Color(0xFF1E4976),
-                              Color(0xFF0A1B32),
-                              Color(0xFF020B18),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SafeArea(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 500),
-                          transitionBuilder: (
-                            Widget child,
-                            Animation<double> animation,
-                          ) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          },
-                          child: _getPage(_selectedIndex, context),
-                        ),
-                      ),
-
-                      // Floating Bottom Navigation
-                      _buildFloatingBottomNav(context),
-
-                      // Refresh FAB (Only on Dashboard)
-                      if (_selectedIndex == 0)
-                        Positioned(
-                          bottom: 120,
-                          right: 24,
-                          child: FloatingActionButton(
-                            onPressed: _isFabRefreshing ? null : _onFabRefresh,
-                            backgroundColor: const Color(0xFF4BB4FF),
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+    return PopScope(
+      canPop: false,
+      child: AnimatedBuilder(
+        animation: _localeProvider,
+        builder: (context, child) {
+          return Localizations.override(
+            context: context,
+            locale: _localeProvider.locale,
+            child: Builder(
+              builder:
+                  (context) => Scaffold(
+                    key: _scaffoldKey,
+                    extendBodyBehindAppBar: true,
+                    drawer: _buildGlassDrawer(context),
+                    body: Stack(
+                      children: [
+                        // Background matches Login Page
+                        Container(
+                          decoration: const BoxDecoration(
+                            gradient: RadialGradient(
+                              center: Alignment.topLeft,
+                              radius: 1.5,
+                              colors: [
+                                Color(0xFF1E4976),
+                                Color(0xFF0A1B32),
+                                Color(0xFF020B18),
+                              ],
                             ),
-                            child:
-                                _isFabRefreshing
-                                    ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                    : const Icon(
-                                      Icons.refresh_rounded,
-                                      color: Colors.white,
-                                    ),
                           ),
                         ),
-                    ],
+
+                        SafeArea(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            transitionBuilder: (
+                              Widget child,
+                              Animation<double> animation,
+                            ) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                            child: _getPage(_selectedIndex, context),
+                          ),
+                        ),
+
+                        // Floating Bottom Navigation
+                        _buildFloatingBottomNav(context),
+
+                        // Refresh FAB (Only on Dashboard)
+                        if (_selectedIndex == 0)
+                          Positioned(
+                            bottom: 120,
+                            right: 24,
+                            child: FloatingActionButton(
+                              onPressed:
+                                  _isFabRefreshing ? null : _onFabRefresh,
+                              backgroundColor: const Color(0xFF4BB4FF),
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child:
+                                  _isFabRefreshing
+                                      ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.5,
+                                        ),
+                                      )
+                                      : const Icon(
+                                        Icons.refresh_rounded,
+                                        color: Colors.white,
+                                      ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-          ),
-        );
-      },
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -1632,22 +1430,25 @@ class _OfficerHomeState extends State<OfficerHome> {
                                   ),
                                 ),
                           ),
+                          const Divider(
+                            color: Colors.white12,
+                            indent: 30,
+                            endIndent: 30,
+                          ),
+                          _drawerItem(
+                            Icons.logout_rounded,
+                            "Logout",
+                            color: Colors.redAccent,
+                            onTap: () {
+                              Navigator.pop(context); // Close drawer
+                              _handleLogout();
+                            },
+                          ),
                           // Note: Language settings moved to app bar for quick access
                           // _drawerItem(Icons.language, "Language", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageSettingsPage()))),
                         ],
                       ),
                     ),
-                  ),
-                  const Divider(
-                    color: Colors.white12,
-                    indent: 30,
-                    endIndent: 30,
-                  ),
-                  _drawerItem(
-                    Icons.logout_rounded,
-                    AppLocalizations.of(context)?.signOut ?? "Sign Out",
-                    color: Colors.redAccent.withOpacity(0.8),
-                    onTap: _handleSignOut,
                   ),
                   const SizedBox(height: 30),
                 ],

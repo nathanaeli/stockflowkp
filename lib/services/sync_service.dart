@@ -1455,7 +1455,8 @@ class SyncService {
       'products': await syncPendingProducts(token),
       'product_items': await syncPendingProductItems(token),
       'stock_movements': await syncPendingStockMovements(token),
-      'stocks': await syncPendingStocks(token), // Add stocks sync
+      'stocks': await syncPendingStocks(token),
+      'customers': await syncPendingCustomers(token),
     };
 
     // Calculate overall success
@@ -1464,30 +1465,35 @@ class SyncService {
     final stockMovementsResult =
         results['stock_movements'] as Map<String, dynamic>? ?? {};
     final stocksResult = results['stocks'] as Map<String, dynamic>? ?? {};
+    final customersResult = results['customers'] as Map<String, dynamic>? ?? {};
 
     final allProductsSuccess = productsResult['success'] as bool? ?? false;
     final allItemsSuccess = itemsResult['success'] as bool? ?? false;
     final allStockMovementsSuccess =
         stockMovementsResult['success'] as bool? ?? false;
     final allStocksSuccess = stocksResult['success'] as bool? ?? false;
+    final allCustomersSuccess = customersResult['success'] as bool? ?? false;
 
     final overallSuccess =
         allProductsSuccess &&
         allItemsSuccess &&
         allStockMovementsSuccess &&
-        allStocksSuccess;
+        allStocksSuccess &&
+        allCustomersSuccess;
 
     final totalSynced =
         (productsResult['synced_count'] as int? ?? 0) +
         (itemsResult['synced_count'] as int? ?? 0) +
         (stockMovementsResult['synced_count'] as int? ?? 0) +
-        (stocksResult['synced_count'] as int? ?? 0);
+        (stocksResult['synced_count'] as int? ?? 0) +
+        (customersResult['synced_count'] as int? ?? 0);
 
     final totalFailed =
         (productsResult['failed_count'] as int? ?? 0) +
         (itemsResult['failed_count'] as int? ?? 0) +
         (stockMovementsResult['failed_count'] as int? ?? 0) +
-        (stocksResult['failed_count'] as int? ?? 0);
+        (stocksResult['failed_count'] as int? ?? 0) +
+        (customersResult['failed_count'] as int? ?? 0);
 
     print('📊 Comprehensive sync (including stocks) completed:');
     print('   Total synced: $totalSynced');
@@ -1503,5 +1509,128 @@ class SyncService {
       'results': results,
       'summary': {'total_synced': totalSynced, 'total_failed': totalFailed},
     };
+  }
+
+  /// Sync pending customers to the server
+  Future<Map<String, dynamic>> syncPendingCustomers(String token) async {
+    final db = await _dbService.database;
+
+    try {
+      final pendingCustomers = await db.query(
+        'customers',
+        where: 'sync_status = ?',
+        whereArgs: [statusPending],
+      );
+
+      if (pendingCustomers.isEmpty) {
+        return {
+          'success': true,
+          'message': 'No pending customers to sync',
+          'synced_count': 0,
+          'failed_count': 0,
+        };
+      }
+
+      int syncedCount = 0;
+      int failedCount = 0;
+      List<String> errors = [];
+
+      print('🔄 Syncing ${pendingCustomers.length} pending customers...');
+
+      for (var customer in pendingCustomers) {
+        try {
+          final success = await _syncSingleCustomer(customer, token);
+          if (success) {
+            syncedCount++;
+            print('✅ Synced customer: ${customer['name']}');
+          } else {
+            failedCount++;
+            errors.add('Failed to sync customer: ${customer['name']}');
+          }
+        } catch (e) {
+          failedCount++;
+          errors.add('Error syncing customer ${customer['name']}: $e');
+        }
+      }
+
+      return {
+        'success': failedCount == 0,
+        'message':
+            failedCount == 0
+                ? 'All customers synced successfully'
+                : 'Some customers failed to sync',
+        'synced_count': syncedCount,
+        'failed_count': failedCount,
+        'errors': errors,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Customer sync failed: $e',
+        'synced_count': 0,
+        'failed_count': 0,
+        'errors': [e.toString()],
+      };
+    }
+  }
+
+  /// Sync a single customer
+  Future<bool> _syncSingleCustomer(
+    Map<String, dynamic> customer,
+    String token,
+  ) async {
+    try {
+      print('👤 Syncing customer: ${customer['name']}');
+      final db = await _dbService.database;
+
+      final customerData = {
+        'name': customer['name'],
+        'email': customer['email'],
+        'phone': customer['phone'],
+        'address': customer['address'],
+        'status': customer['status'] ?? 'active',
+        'duka_id': customer['duka_id'],
+      };
+
+      bool isUpdate = customer['server_id'] != null;
+      Map<String, dynamic> response;
+
+      if (isUpdate) {
+        response = await ApiService().updateCustomer(
+          customer['server_id'],
+          customerData,
+          token,
+        );
+      } else {
+        response = await ApiService().createCustomer(customerData, token);
+      }
+
+      if (response['success'] == true) {
+        final serverData = response['data']['customer'];
+        final serverId = serverData['id'];
+
+        print(
+          '✅ Customer synced. Updating local record ${customer['local_id']} with server_id: $serverId',
+        );
+
+        await db.update(
+          'customers',
+          {
+            'server_id': serverId,
+            'sync_status': statusSynced,
+            'updated_at': DateTime.now().toIso8601String(),
+          },
+          where: 'local_id = ?',
+          whereArgs: [customer['local_id']],
+        );
+        return true;
+      } else {
+        print('⚠️ Failed to sync customer: ${response['message']}');
+        return false;
+      }
+    } catch (e) {
+      print('💥 Error syncing customer: $e');
+      return false;
+    }
   }
 }
