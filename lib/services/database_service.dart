@@ -1443,11 +1443,56 @@ class DatabaseService {
         'sync_status': statusSynced,
       };
 
-      await txn.insert(
+      // Check for existing record with the same server_id
+      final existingByServerId = await txn.query(
         'sale_items',
-        record,
-        conflictAlgorithm: ConflictAlgorithm.replace,
+        where: 'server_id = ?',
+        whereArgs: [map['id']],
       );
+
+      if (existingByServerId.isNotEmpty) {
+        await txn.update(
+          'sale_items',
+          record,
+          where: 'server_id = ?',
+          whereArgs: [map['id']],
+        );
+      } else {
+        // Try to find a local record that hasn't been synced yet (matched by sale, product, and optionally item)
+        String localWhere =
+            'sale_local_id = ? AND product_local_id = ? AND server_id IS NULL';
+        List<dynamic> localArgs = [saleLocalId, prodLocalId];
+
+        if (productItemLocalId != null) {
+          localWhere += ' AND product_item_local_id = ?';
+          localArgs.add(productItemLocalId);
+        } else {
+          localWhere +=
+              ' AND (product_item_local_id IS NULL OR product_item_local_id = 0)';
+        }
+
+        final localExisting = await txn.query(
+          'sale_items',
+          where: localWhere,
+          whereArgs: localArgs,
+          limit: 1,
+        );
+
+        if (localExisting.isNotEmpty) {
+          await txn.update(
+            'sale_items',
+            record,
+            where: 'local_id = ?',
+            whereArgs: [localExisting.first['local_id']],
+          );
+        } else {
+          await txn.insert(
+            'sale_items',
+            record,
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+      }
     }
   }
 
@@ -1671,10 +1716,10 @@ class DatabaseService {
 
     record['sync_status'] = statusSynced;
     _convertBooleansToInts(record);
-    
+
     // Remove fields that don't exist in the sales table schema to prevent update errors
     record.removeWhere((key, value) => !_isValidField(key, record, 'sales'));
-    
+
     record.removeWhere((key, value) => value == null);
 
     final now = DateTime.now().toIso8601String();
@@ -2293,6 +2338,15 @@ class DatabaseService {
     final db = await database;
     await db.delete('user_data');
     await db.insert('user_data', {'data': jsonEncode(data)});
+  }
+
+  Future<void> clearLocalData() async {
+    final db = await database;
+    await db.delete('sales');
+    await db.delete('sale_items');
+    await db.delete('loan_payments');
+    await db.delete('customers');
+    await db.delete('customersinfo');
   }
 
   // Save categories and permissions separately for officer role
@@ -2916,12 +2970,20 @@ class DatabaseService {
 
   Future<void> updateSaleServerId(int localId, int serverId) async {
     final db = await database;
-    await db.update(
-      'sales',
-      {'server_id': serverId, 'sync_status': statusSynced},
-      where: 'local_id = ?',
-      whereArgs: [localId],
-    );
+    await db.transaction((txn) async {
+      await txn.update(
+        'sales',
+        {'server_id': serverId, 'sync_status': statusSynced},
+        where: 'local_id = ?',
+        whereArgs: [localId],
+      );
+      await txn.update(
+        'sale_items',
+        {'sync_status': statusSynced},
+        where: 'sale_local_id = ?',
+        whereArgs: [localId],
+      );
+    });
   }
 
   Future<void> saveSales(List<dynamic> sales) async {
@@ -3138,7 +3200,7 @@ class DatabaseService {
     } else {
       // Create new record
       record['created_at'] = DateTime.now().toIso8601String();
-      record['server_id'] = record['server_id'] ?? null;
+      record['server_id'] = record['server_id'];
 
       return await db.insert('tenant_account', record);
     }

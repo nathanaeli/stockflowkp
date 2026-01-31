@@ -21,11 +21,11 @@ plugins {
     // Flutter plugin loader (REQUIRED)
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
 
-    // Android Gradle Plugin (compatible with Gradle 8.4)
-    id("com.android.application") version "8.3.2" apply false
+    // Android Gradle Plugin (compatible with Gradle 8.4+)
+    id("com.android.application") version "8.7.2" apply false
 
     // Kotlin plugin (required by modern Flutter plugins)
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
 }
 
 dependencyResolutionManagement {

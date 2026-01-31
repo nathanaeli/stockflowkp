@@ -30,6 +30,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
       TextEditingController();
 
   bool _isLoading = false;
+  bool _showSuccess = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -74,18 +75,16 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
       if (!mounted) return;
 
       // Show success message and navigate
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response['message'] ?? 'Registration successful!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      // Show success animation
+      setState(() {
+        _isLoading = false;
+        _showSuccess = true;
+      });
 
-      // Navigate to Login Screen (or Dashboard if you auto-login)
-      // Since the response contains the token, you could also save it and go straight to Dashboard.
-      // For now, let's go to Login for simplicity, or we can handle the auto-login logic here.
-      // Based on typical flows, sending them to Login is safe.
+      // Wait for animation then navigate
+      await Future.delayed(const Duration(milliseconds: 2500));
+
+      if (!mounted) return;
 
       Navigator.pushAndRemoveUntil(
         context,
@@ -349,8 +348,20 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
           // Full-screen animated loader overlay
           if (_isLoading) _buildCreatingAccountLoader(),
+
+          // Success Animation Overlay
+          if (_showSuccess) _buildSuccessAnimation(),
         ],
       ),
+    );
+  }
+
+  Widget _buildSuccessAnimation() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: const Color(0xFF0A1628).withOpacity(0.98),
+      child: const _SuccessAnimationWidget(),
     );
   }
 
@@ -732,6 +743,125 @@ class _AccountCreationLoaderWidgetState
           ),
         );
       },
+    );
+  }
+}
+
+class _SuccessAnimationWidget extends StatefulWidget {
+  const _SuccessAnimationWidget();
+
+  @override
+  State<_SuccessAnimationWidget> createState() =>
+      _SuccessAnimationWidgetState();
+}
+
+class _SuccessAnimationWidgetState extends State<_SuccessAnimationWidget>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _checkAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+      ),
+    );
+
+    _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.6, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ScaleTransition(
+            scale: _scaleAnimation,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.greenAccent.shade400,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.greenAccent.withOpacity(0.4),
+                    blurRadius: 30,
+                    spreadRadius: 8,
+                  ),
+                ],
+              ),
+              child: AnimatedBuilder(
+                animation: _checkAnimation,
+                builder: (context, child) {
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.check_rounded,
+                        size: 60 * _checkAnimation.value,
+                        color: Colors.white,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+          FadeTransition(
+            opacity: _scaleAnimation,
+            child: Column(
+              children: [
+                Text(
+                  "Success!",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Your account has been created.",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                const CircularProgressIndicator(
+                  color: Colors.white24,
+                  strokeWidth: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

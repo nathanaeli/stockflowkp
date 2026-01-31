@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:stockflowkp/services/database_service.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.187.223:8000';
+  static const String baseUrl = 'http://192.168.217.223:8000';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
@@ -64,6 +64,29 @@ class ApiService {
         return responseData; // Success
       } else {
         throw responseData['message'] ?? 'Failed to delete customer';
+      }
+    } catch (e) {
+      throw 'Connection error: $e';
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteTenantAccount(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/deleteaccount'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        return responseData;
+      } else {
+        throw responseData['message'] ?? 'Failed to delete account';
       }
     } catch (e) {
       throw 'Connection error: $e';
@@ -1585,7 +1608,7 @@ class ApiService {
       String queryString = '';
       if (startDate != null) queryString += '?start_date=$startDate';
       if (endDate != null) {
-        queryString += (queryString.isEmpty ? '?' : '&') + 'end_date=$endDate';
+        queryString += '${queryString.isEmpty ? '?' : '&'}end_date=$endDate';
       }
 
       final response = await http.get(

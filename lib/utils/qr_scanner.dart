@@ -8,10 +8,10 @@ class QRCodeScanner extends StatefulWidget {
   final String? initialMessage;
 
   const QRCodeScanner({
-    Key? key,
+    super.key,
     required this.onQRCodeScanned,
     this.initialMessage,
-  }) : super(key: key);
+  });
 
   @override
   State<QRCodeScanner> createState() => _QRCodeScannerState();
@@ -119,7 +119,11 @@ class _QRCodeScannerState extends State<QRCodeScanner> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white, size: 32),
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                    size: 32,
+                  ),
                   onPressed: _resumeScanning,
                 ),
               ],
@@ -136,10 +140,7 @@ class _QRCodeScannerState extends State<QRCodeScanner> {
                 if (widget.initialMessage != null)
                   Text(
                     widget.initialMessage!,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                 const SizedBox(height: 16),
@@ -206,10 +207,7 @@ class _QRCodeScannerState extends State<QRCodeScanner> {
               const SizedBox(height: 16),
               const Text(
                 'Please grant camera permission to scan QR codes.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
@@ -218,7 +216,10 @@ class _QRCodeScannerState extends State<QRCodeScanner> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 15,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

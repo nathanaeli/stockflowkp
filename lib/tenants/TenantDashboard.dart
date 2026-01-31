@@ -186,6 +186,108 @@ class _TenantDashboardState extends State<TenantDashboard> {
     }
   }
 
+  Future<void> _handleDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF0A1B32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              'Delete Account',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Are you sure you want to PERMANENTLY delete your account?',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'This action is IRREVERSIBLE. All your data including shops, inventory, sales, and staff will be permanently removed.',
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white70),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white54),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Permanently Delete',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      try {
+        final response = await _apiService.deleteTenantAccount(_token!);
+        if (response['success'] == true) {
+          await _dbService.logout();
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Account deleted successfully."),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (route) => false,
+          );
+        } else {
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? "Deletion failed"),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error deleting account: $e"),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
   // Helper for currency formatting
   String _formatCurrency(dynamic amount) {
     final formatter = NumberFormat.currency(symbol: 'Tsh ', decimalDigits: 0);
@@ -342,7 +444,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
     final overview = _tenantData!['overview'];
     final financials = overview['financials'] ?? {};
     final inventory = overview['inventory'] ?? {};
-    final businessStats = overview['business_stats'] ?? {};
     final dukas =
         _dukasList.isNotEmpty
             ? _dukasList
@@ -375,19 +476,12 @@ class _TenantDashboardState extends State<TenantDashboard> {
               Icons.business_center_outlined,
             ),
             const SizedBox(height: 16),
-            _buildInfoRow(
-              _buildStatCard(
-                AppLocalizations.of(context)!.totalProducts,
-                inventory['total_products']?.toString() ?? '0',
-                Icons.inventory_2_outlined,
-                Colors.cyanAccent,
-              ),
-              _buildStatCard(
-                AppLocalizations.of(context)!.accountBalance,
-                _formatCurrency(businessStats['account_balance']),
-                Icons.account_balance_outlined,
-                Colors.amberAccent,
-              ),
+            _buildStatCard(
+              AppLocalizations.of(context)!.totalProducts,
+              inventory['total_products']?.toString() ?? '0',
+              Icons.inventory_2_outlined,
+              Colors.cyanAccent,
+              fullWidth: true,
             ),
             const SizedBox(height: 12),
             _buildStatCard(
@@ -549,6 +643,24 @@ class _TenantDashboardState extends State<TenantDashboard> {
               ),
             ),
           ),
+
+          const SizedBox(height: 16),
+
+          ElevatedButton.icon(
+            onPressed: _handleDeleteAccount,
+            icon: const Icon(Icons.delete_forever_rounded, size: 18),
+            label: const Text("Delete Account"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent.withOpacity(0.1),
+              foregroundColor: Colors.redAccent,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 100), // Extra space for bottom nav
         ],
       ),
     );
@@ -857,11 +969,21 @@ class _TenantDashboardState extends State<TenantDashboard> {
                         top: BorderSide(color: Colors.white.withOpacity(0.05)),
                       ),
                     ),
-                    child: _drawerItem(
-                      Icons.logout_rounded,
-                      l10n.signOut,
-                      color: Colors.redAccent.withOpacity(0.9),
-                      onTap: _handleLogout,
+                    child: Column(
+                      children: [
+                        _drawerItem(
+                          Icons.delete_forever_rounded,
+                          "Delete Account",
+                          color: Colors.redAccent.withOpacity(0.9),
+                          onTap: _handleDeleteAccount,
+                        ),
+                        _drawerItem(
+                          Icons.logout_rounded,
+                          l10n.signOut,
+                          color: Colors.redAccent.withOpacity(0.9),
+                          onTap: _handleLogout,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -1236,16 +1358,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildInfoRow(Widget left, Widget right) {
-    return Row(
-      children: [
-        Expanded(child: left),
-        const SizedBox(width: 12),
-        Expanded(child: right),
-      ],
     );
   }
 

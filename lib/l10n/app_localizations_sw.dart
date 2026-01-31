@@ -379,6 +379,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get emailInvoice => 'Tuma Pesi Barua Pepe';
 
   @override
+  String get shareInvoice => 'Share Invoice';
+
+  @override
+  String get shareViaWhatsApp => 'Share via WhatsApp';
+
+  @override
   String get paid => 'IMALIPWA';
 
   @override

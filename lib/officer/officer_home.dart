@@ -28,6 +28,7 @@ import 'backup_restore_page.dart';
 import 'package:stockflowkp/utils/qr_scanner.dart';
 import 'add_product_page.dart';
 import 'product_details_page.dart';
+import 'contact_info_page.dart';
 import 'package:stockflowkp/auth/landing_screen.dart';
 
 // Simple Locale Provider
@@ -348,7 +349,6 @@ class _OfficerHomeState extends State<OfficerHome> {
       await _loadTodaySales();
       await _loadPendingSalesCount();
       await _checkLowStock(showNotification: checkAlerts);
-    } catch (e) {
     } finally {
       if (showLoading && mounted) setState(() => _isLoading = false);
     }
@@ -482,6 +482,9 @@ class _OfficerHomeState extends State<OfficerHome> {
     );
 
     if (confirm == true) {
+      // Clear all local sales data for privacy/clean slate
+      await DatabaseService().clearLocalData();
+
       // Clear user data
       await DatabaseService().deleteUserData();
       final prefs = await SharedPreferences.getInstance();
@@ -904,6 +907,18 @@ class _OfficerHomeState extends State<OfficerHome> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const SaleLoansPage(),
+                        ),
+                      ),
+                ),
+                _buildActionTile(
+                  Icons.support_agent_rounded,
+                  'Contact Us',
+                  const Color(0xFF4BB4FF),
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ContactInfoPage(),
                         ),
                       ),
                 ),
@@ -1444,6 +1459,7 @@ class _OfficerHomeState extends State<OfficerHome> {
                               _handleLogout();
                             },
                           ),
+
                           // Note: Language settings moved to app bar for quick access
                           // _drawerItem(Icons.language, "Language", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageSettingsPage()))),
                         ],

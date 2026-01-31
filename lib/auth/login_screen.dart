@@ -22,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _showSuccess = false;
   bool _obscurePassword = true;
   bool _rememberMe = false;
   late AnimationController _shakeController;
@@ -124,6 +125,17 @@ class _LoginScreenState extends State<LoginScreen>
       if (role == 'officer' || role == 'tenant') {
         await dbService.saveCategoriesAndPermissions(response);
       }
+
+      if (!mounted) return;
+
+      // Show success animation
+      setState(() {
+        _isLoading = false;
+        _showSuccess = true;
+      });
+
+      // Wait for animation then navigate
+      await Future.delayed(const Duration(milliseconds: 2000));
 
       if (!mounted) return;
 
@@ -252,8 +264,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     SnackBar(content: Text('Error: $e')),
                                   );
                                 } finally {
-                                  if (mounted)
+                                  if (mounted) {
                                     setState(() => isLoading = false);
+                                  }
                                 }
                               },
                       style: ElevatedButton.styleFrom(
@@ -505,11 +518,10 @@ class _LoginScreenState extends State<LoginScreen>
                                                               value ?? false,
                                                     ),
                                                 fillColor:
-                                                    MaterialStateProperty.resolveWith(
+                                                    WidgetStateProperty.resolveWith(
                                                       (states) {
                                                         if (states.contains(
-                                                          MaterialState
-                                                              .selected,
+                                                          WidgetState.selected,
                                                         )) {
                                                           return const Color(
                                                             0xFF4BB4FF,
@@ -643,6 +655,15 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
             ),
+
+            // Success Animation Overlay
+            if (_showSuccess)
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: const Color(0xFF0A1628).withOpacity(0.98),
+                child: const _SuccessAnimationWidget(),
+              ),
           ],
         ),
       ),
@@ -725,6 +746,125 @@ class _LoginScreenState extends State<LoginScreen>
             stops: const [0.2, 1.0],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SuccessAnimationWidget extends StatefulWidget {
+  const _SuccessAnimationWidget();
+
+  @override
+  State<_SuccessAnimationWidget> createState() =>
+      _SuccessAnimationWidgetState();
+}
+
+class _SuccessAnimationWidgetState extends State<_SuccessAnimationWidget>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _checkAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+      ),
+    );
+
+    _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.6, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ScaleTransition(
+            scale: _scaleAnimation,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.greenAccent.shade400,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.greenAccent.withOpacity(0.4),
+                    blurRadius: 30,
+                    spreadRadius: 8,
+                  ),
+                ],
+              ),
+              child: AnimatedBuilder(
+                animation: _checkAnimation,
+                builder: (context, child) {
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.check_rounded,
+                        size: 60 * _checkAnimation.value,
+                        color: Colors.white,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+          FadeTransition(
+            opacity: _scaleAnimation,
+            child: Column(
+              children: [
+                Text(
+                  "Welcome Back!",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Logging you in safely...",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                const CircularProgressIndicator(
+                  color: Colors.white24,
+                  strokeWidth: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

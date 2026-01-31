@@ -187,10 +187,11 @@ class _AddProductItemPageState extends State<AddProductItemPage> {
     );
 
     _loadProductItems();
-    if (mounted)
+    if (mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Item deleted')));
+    }
   }
 
   @override

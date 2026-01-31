@@ -226,13 +226,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     final NumberFormat currencyFormat = NumberFormat('#,##0', 'en_US');
     final NumberFormat quantityFormat = NumberFormat('#,##0', 'en_US');
 
-    String _formatPrice(dynamic price) {
+    String formatPrice(dynamic price) {
       if (price == null) return '0';
       final num value = price is String ? num.tryParse(price) ?? 0 : price;
       return currencyFormat.format(value);
     }
 
-    String _formatQuantity(dynamic qty) {
+    String formatQuantity(dynamic qty) {
       final val =
           qty is int ? qty : (int.tryParse(qty?.toString() ?? '0') ?? 0);
       return '${quantityFormat.format(val)} ${_product['unit'] ?? ''}';
@@ -408,7 +408,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               Expanded(
                                 child: _infoCard(
                                   'Buying Price',
-                                  'TZS ${_formatPrice(_product['buying_price'] ?? _product['base_price'])}',
+                                  'TZS ${formatPrice(_product['buying_price'] ?? _product['base_price'])}',
                                   fontScale,
                                 ),
                               ),
@@ -416,7 +416,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               Expanded(
                                 child: _infoCard(
                                   'Selling Price',
-                                  'TZS ${_formatPrice(_product['selling_price'])}',
+                                  'TZS ${formatPrice(_product['selling_price'])}',
                                   fontScale,
                                   highlight: true,
                                 ),
@@ -468,7 +468,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             children: [
                               _infoCard(
                                 'Total Available Stock',
-                                _formatQuantity(totalStock),
+                                formatQuantity(totalStock),
                                 fontScale,
                                 highlight: true,
                                 badge: totalStock <= 10 ? 'LOW STOCK' : null,

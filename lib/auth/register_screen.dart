@@ -424,7 +424,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
 
                     const SizedBox(height: 16),
                     Divider(color: Colors.white.withOpacity(0.1)),

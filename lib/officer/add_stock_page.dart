@@ -72,13 +72,6 @@ class _AddStockPageState extends State<AddStockPage> {
           if (response['success'] == true) {
             success = true;
             message = "Stock added successfully to server";
-
-            // Should initiate a generic sync or update the local record to reflect changes
-            // For now, we manually update local stock to reflect immediate change
-            // But ideally we pull from server.
-
-            // Fallback: Update local regardless to show immediate UI update
-            // We can trust the server succeeded.
             await DatabaseService().adjustStock(
               widget.product,
               quantityToAdd,
@@ -319,8 +312,9 @@ class _AddStockPageState extends State<AddStockPage> {
                       validator: (value) {
                         // Optional, but if provided must be number
                         if (value != null && value.isNotEmpty) {
-                          if (double.tryParse(value) == null)
+                          if (double.tryParse(value) == null) {
                             return "Invalid number";
+                          }
                         }
                         return null;
                       },

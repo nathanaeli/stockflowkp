@@ -278,8 +278,9 @@ class _ReduceStockPageState extends State<ReduceStockPage> {
                                   )
                                   .toList(),
                           onChanged: (val) {
-                            if (val != null)
+                            if (val != null) {
                               setState(() => _selectedReason = val);
+                            }
                           },
                         ),
                       ),
@@ -293,8 +294,9 @@ class _ReduceStockPageState extends State<ReduceStockPage> {
                       keyboardType: TextInputType.number,
                       validator: (val) {
                         if (val == null || val.isEmpty) return "Required";
-                        if (int.tryParse(val) == null || int.parse(val) <= 0)
+                        if (int.tryParse(val) == null || int.parse(val) <= 0) {
                           return "Must be > 0";
+                        }
                         return null;
                       },
                     ),

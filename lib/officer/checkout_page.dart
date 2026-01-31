@@ -28,7 +28,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   bool _isLoan = false;
   DateTime? _selectedDate;
   double _discount = 0.0;
-  bool _isOrderSummaryExpanded = false;
+  final bool _isOrderSummaryExpanded = false;
 
   @override
   void initState() {
@@ -420,7 +420,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     surface: Color(0xFF0A1B32),
                     onSurface: Colors.white,
                   ),
-                  dialogBackgroundColor: const Color(0xFF0A1B32),
+                  dialogTheme: DialogThemeData(
+                    backgroundColor: const Color(0xFF0A1B32),
+                  ),
                 ),
                 child: child!,
               );

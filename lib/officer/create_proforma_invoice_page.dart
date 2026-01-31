@@ -12,7 +12,8 @@ class CreateProformaInvoicePage extends StatefulWidget {
   const CreateProformaInvoicePage({super.key});
 
   @override
-  State<CreateProformaInvoicePage> createState() => _CreateProformaInvoicePageState();
+  State<CreateProformaInvoicePage> createState() =>
+      _CreateProformaInvoicePageState();
 }
 
 class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
@@ -20,11 +21,13 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
   bool _isLoading = false;
   final NumberFormat _currencyFormat = NumberFormat('#,##0.00', 'en_US');
   Map<String, dynamic>? _selectedCustomer;
-  
+
   List<Map<String, dynamic>> _popularProducts = [];
 
-  double get _totalAmount => _cart.fold(0, (sum, item) => sum + (item['subtotal'] as double));
-  int get _totalItems => _cart.fold(0, (sum, item) => sum + (item['quantity'] as int));
+  double get _totalAmount =>
+      _cart.fold(0, (sum, item) => sum + (item['subtotal'] as double));
+  int get _totalItems =>
+      _cart.fold(0, (sum, item) => sum + (item['quantity'] as int));
 
   @override
   void initState() {
@@ -37,7 +40,7 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
     try {
       final products = await DatabaseService().getPopularProducts(limit: 20);
       final enriched = await _enrichProductsWithStock(products);
-      
+
       if (mounted) {
         setState(() {
           _popularProducts = enriched;
@@ -45,16 +48,18 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load data: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<List<Map<String, dynamic>>> _enrichProductsWithStock(List<Map<String, dynamic>> products) async {
+  Future<List<Map<String, dynamic>>> _enrichProductsWithStock(
+    List<Map<String, dynamic>> products,
+  ) async {
     final db = await DatabaseService().database;
     List<Map<String, dynamic>> enriched = [];
 
@@ -64,12 +69,20 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
 
       int bulkQty = 0;
       List<Map<String, dynamic>> stockList = [];
-      
+
       if (serverId != null) {
-        stockList = await db.query('stocks', where: 'product_id = ?', whereArgs: [serverId]);
+        stockList = await db.query(
+          'stocks',
+          where: 'product_id = ?',
+          whereArgs: [serverId],
+        );
       }
       if (stockList.isEmpty) {
-        stockList = await db.query('stocks', where: 'product_id = ?', whereArgs: [localId]);
+        stockList = await db.query(
+          'stocks',
+          where: 'product_id = ?',
+          whereArgs: [localId],
+        );
       }
       if (stockList.isNotEmpty) {
         bulkQty = stockList.first['quantity'] as int? ?? 0;
@@ -77,7 +90,7 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
 
       final itemRes = await db.rawQuery(
         "SELECT COUNT(*) as count FROM product_items WHERE product_id = ? AND status = 'available'",
-        [localId]
+        [localId],
       );
       final int itemQty = itemRes.first['count'] as int? ?? 0;
 
@@ -90,12 +103,13 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QRCodeScanner(
-          onQRCodeScanned: (code) {
-            Navigator.pop(context, code);
-          },
-          initialMessage: 'Scan product barcode or QR code',
-        ),
+        builder:
+            (context) => QRCodeScanner(
+              onQRCodeScanned: (code) {
+                Navigator.pop(context, code);
+              },
+              initialMessage: 'Scan product barcode or QR code',
+            ),
       ),
     );
 
@@ -108,7 +122,7 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
     setState(() => _isLoading = true);
     try {
       final product = await DatabaseService().findProductByBarcodeOrSku(code);
-      
+
       if (product != null) {
         _addToCart(product);
         if (mounted) {
@@ -142,29 +156,49 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
   void _addToCart(Map<String, dynamic> product) {
     setState(() {
       if (product['scanned_item_id'] != null) {
-        final exists = _cart.any((item) => item['scanned_item_id'] == product['scanned_item_id']);
+        final exists = _cart.any(
+          (item) => item['scanned_item_id'] == product['scanned_item_id'],
+        );
         if (exists) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('This specific item is already in the cart'), duration: Duration(seconds: 1)),
+            const SnackBar(
+              content: Text('This specific item is already in the cart'),
+              duration: Duration(seconds: 1),
+            ),
           );
           return;
         }
         final price = (product['selling_price'] as num).toDouble();
-        _cart.add({...product, 'quantity': 1, 'unit_price': price, 'subtotal': price});
+        _cart.add({
+          ...product,
+          'quantity': 1,
+          'unit_price': price,
+          'subtotal': price,
+        });
       } else {
-        final existingIndex = _cart.indexWhere((item) => 
-          item['local_id'] == product['local_id'] && 
-          item['scanned_item_id'] == null
+        final existingIndex = _cart.indexWhere(
+          (item) =>
+              item['local_id'] == product['local_id'] &&
+              item['scanned_item_id'] == null,
         );
 
         if (existingIndex != -1) {
           final currentItem = _cart[existingIndex];
           final newQty = (currentItem['quantity'] as int) + 1;
           final price = currentItem['unit_price'] as double;
-          _cart[existingIndex] = {...currentItem, 'quantity': newQty, 'subtotal': newQty * price};
+          _cart[existingIndex] = {
+            ...currentItem,
+            'quantity': newQty,
+            'subtotal': newQty * price,
+          };
         } else {
           final price = (product['selling_price'] as num).toDouble();
-          _cart.add({...product, 'quantity': 1, 'unit_price': price, 'subtotal': price});
+          _cart.add({
+            ...product,
+            'quantity': 1,
+            'unit_price': price,
+            'subtotal': price,
+          });
         }
       }
     });
@@ -200,30 +234,38 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (_, controller) => Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF0A1B32).withOpacity(0.95),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+      builder:
+          (context) => DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder:
+                (_, controller) => Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0A1B32).withOpacity(0.95),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: _ProductSelectionSheet(
+                        onSelect: (product) {
+                          Navigator.pop(context, product);
+                        },
+                        initialProducts: _popularProducts,
+                      ),
+                    ),
+                  ),
+                ),
           ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: _ProductSelectionSheet(
-                onSelect: (product) {
-                  Navigator.pop(context, product);
-                },
-                initialProducts: _popularProducts,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
 
     if (selected != null) {
@@ -246,29 +288,37 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (_, controller) => Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF0A1B32).withOpacity(0.95),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+      builder:
+          (context) => DraggableScrollableSheet(
+            initialChildSize: 0.8,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder:
+                (_, controller) => Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0A1B32).withOpacity(0.95),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: _CustomerSearchSheet(
+                        onSelect: (customer) {
+                          Navigator.pop(context, customer);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
           ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: _CustomerSearchSheet(
-                onSelect: (customer) {
-                  Navigator.pop(context, customer);
-                },
-              ),
-            ),
-          ),
-        ),
-      ),
     );
 
     if (selected != null) {
@@ -283,116 +333,197 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
     String note = '';
     final discountController = TextEditingController();
     final noteController = TextEditingController();
-    
+
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final double finalTotal = (_totalAmount - discount).clamp(0.0, double.infinity);
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setDialogState) {
+              final double finalTotal = (_totalAmount - discount).clamp(
+                0.0,
+                double.infinity,
+              );
 
-          return AlertDialog(
-          backgroundColor: const Color(0xFF0A1B32),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Generate Proforma', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(16),
+              return AlertDialog(
+                backgroundColor: const Color(0xFF0A1B32),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: Column(
-                  children: [
-                    Text('Total Amount', style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11)),
-                    const SizedBox(height: 4),
-                    Text(
-                        _currencyFormat.format(finalTotal),
-                      style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                      if (discount > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            'Discount: -${_currencyFormat.format(discount)}',
-                            style: GoogleFonts.plusJakartaSans(color: Colors.greenAccent, fontSize: 11),
+                title: Text(
+                  'Generate Proforma',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Total Amount',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white54,
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _currencyFormat.format(finalTotal),
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (discount > 0)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  'Discount: -${_currencyFormat.format(discount)}',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.greenAccent,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      TextField(
+                        controller: discountController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Discount Amount',
+                          labelStyle: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.05),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.discount_outlined,
+                            color: Colors.white54,
+                            size: 18,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
                           ),
                         ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-                
-                TextField(
-                  controller: discountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    labelText: 'Discount Amount',
-                    labelStyle: const TextStyle(color: Colors.white54, fontSize: 13),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    prefixIcon: const Icon(Icons.discount_outlined, color: Colors.white54, size: 18),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
-                  onChanged: (val) {
-                    final d = double.tryParse(val) ?? 0.0;
-                    setDialogState(() => discount = d);
-                  },
-                ),
-                const SizedBox(height: 12),
+                        onChanged: (val) {
+                          final d = double.tryParse(val) ?? 0.0;
+                          setDialogState(() => discount = d);
+                        },
+                      ),
+                      const SizedBox(height: 12),
 
-                TextField(
-                  controller: noteController,
-                  style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    labelText: 'Note / Comment',
-                    labelStyle: const TextStyle(color: Colors.white54, fontSize: 13),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    prefixIcon: const Icon(Icons.note_alt_outlined, color: Colors.white54, size: 18),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      TextField(
+                        controller: noteController,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Note / Comment',
+                          labelStyle: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.05),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.note_alt_outlined,
+                            color: Colors.white54,
+                            size: 18,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                        ),
+                        onChanged: (val) {
+                          note = val;
+                        },
+                      ),
+                    ],
                   ),
-                  onChanged: (val) {
-                    note = val;
-                  },
                 ),
-            ],
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white54,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (discount > _totalAmount) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Discount cannot exceed total amount',
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+                      Navigator.pop(context);
+                      _generateProforma(discount, note);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4BB4FF),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                    ),
+                    child: Text(
+                      'Generate',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 13)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                  if (discount > _totalAmount) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Discount cannot exceed total amount'), backgroundColor: Colors.red),
-                    );
-                    return;
-                  }
-                Navigator.pop(context);
-                  _generateProforma(discount, note);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4BB4FF),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              ),
-              child: Text('Generate', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13)),
-            ),
-          ],
-        );
-
-        },
-      ),
     );
   }
 
@@ -405,13 +536,18 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
       };
 
       // Prepare items data
-      final itemsData = _cart.map((item) => {
-        'name': item['name'],
-        'quantity': item['quantity'],
-        'unit_price': item['unit_price'],
-        'subtotal': item['subtotal'],
-        'product_local_id': item['local_id'],
-      }).toList();
+      final itemsData =
+          _cart
+              .map(
+                (item) => {
+                  'name': item['name'],
+                  'quantity': item['quantity'],
+                  'unit_price': item['unit_price'],
+                  'subtotal': item['subtotal'],
+                  'product_local_id': item['local_id'],
+                },
+              )
+              .toList();
 
       // Calculate final total after discount
       final finalTotal = (_totalAmount - discount).clamp(0.0, double.infinity);
@@ -430,7 +566,7 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Proforma Invoice saved successfully!'), 
+            content: Text('Proforma Invoice saved successfully!'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -459,104 +595,147 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
 
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0A1B32),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Quick Add Customer', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: nameController,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  labelStyle: const TextStyle(color: Colors.white54, fontSize: 13),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-                validator: (v) => v?.trim().isEmpty ?? true ? 'Name required' : null,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF0A1B32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              'Quick Add Customer',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: phoneController,
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Phone (Optional)',
-                  labelStyle: const TextStyle(color: Colors.white54, fontSize: 13),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: nameController,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      labelStyle: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 13,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.05),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                    ),
+                    validator:
+                        (v) =>
+                            v?.trim().isEmpty ?? true ? 'Name required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: phoneController,
+                    style: const TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: 'Phone (Optional)',
+                      labelStyle: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 13,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.05),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white54),
                 ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (formKey.currentState!.validate()) {
+                    final name = nameController.text.trim();
+                    final phone = phoneController.text.trim();
+
+                    try {
+                      final db = await DatabaseService().database;
+                      final officerRes = await db.query('officer', limit: 1);
+                      final dukaRes = await db.query('dukas', limit: 1);
+
+                      final tenantId =
+                          officerRes.isNotEmpty
+                              ? officerRes.first['tenant_id']
+                              : 1;
+                      final dukaId =
+                          dukaRes.isNotEmpty ? dukaRes.first['server_id'] : 1;
+
+                      final customer = {
+                        'name': name,
+                        'phone': phone.isEmpty ? null : phone,
+                        'tenant_id': tenantId,
+                        'duka_id': dukaId,
+                      };
+
+                      final id = await DatabaseService().createCustomer(
+                        customer,
+                      );
+                      final newCustomer = {...customer, 'local_id': id};
+
+                      if (mounted) {
+                        Navigator.pop(context);
+                        setState(() {
+                          _selectedCustomer = newCustomer;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Customer added successfully'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4BB4FF),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Add'),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                final name = nameController.text.trim();
-                final phone = phoneController.text.trim();
-                
-                try {
-                  final db = await DatabaseService().database;
-                  final officerRes = await db.query('officer', limit: 1);
-                  final dukaRes = await db.query('dukas', limit: 1);
-                  
-                  final tenantId = officerRes.isNotEmpty ? officerRes.first['tenant_id'] : 1;
-                  final dukaId = dukaRes.isNotEmpty ? dukaRes.first['server_id'] : 1;
-
-                  final customer = {
-                    'name': name,
-                    'phone': phone.isEmpty ? null : phone,
-                    'tenant_id': tenantId, 
-                    'duka_id': dukaId,
-                  };
-
-                  final id = await DatabaseService().createCustomer(customer);
-                  final newCustomer = {
-                    ...customer,
-                    'local_id': id,
-                  };
-                  
-                  if (mounted) {
-                    Navigator.pop(context);
-                    setState(() {
-                      _selectedCustomer = newCustomer;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Customer added successfully'), backgroundColor: Colors.green),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-                    );
-                  }
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4BB4FF),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Add'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -568,7 +747,10 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -583,14 +765,19 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
             Center(
               child: Container(
                 margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4BB4FF).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF4BB4FF).withOpacity(0.3)),
+                  border: Border.all(
+                    color: const Color(0xFF4BB4FF).withOpacity(0.3),
+                  ),
                 ),
                 child: Text(
-                  '${_totalItems} Items',
+                  '$_totalItems Items',
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF4BB4FF),
                     fontWeight: FontWeight.bold,
@@ -609,11 +796,15 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
               gradient: RadialGradient(
                 center: Alignment.topLeft,
                 radius: 1.5,
-                colors: [Color(0xFF1E4976), Color(0xFF0A1B32), Color(0xFF020B18)],
+                colors: [
+                  Color(0xFF1E4976),
+                  Color(0xFF0A1B32),
+                  Color(0xFF020B18),
+                ],
               ),
             ),
           ),
-          
+
           SafeArea(
             child: Column(
               children: [
@@ -622,48 +813,53 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
                   child: _buildCustomerCard(),
                 ),
-                
+
                 // Action Buttons
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      Expanded(child: _buildActionButton(
-                        icon: Icons.qr_code_scanner_rounded,
-                        label: 'Scan',
-                        color: const Color(0xFF4BB4FF),
-                        onTap: _scanBarcode,
-                      )),
+                      Expanded(
+                        child: _buildActionButton(
+                          icon: Icons.qr_code_scanner_rounded,
+                          label: 'Scan',
+                          color: const Color(0xFF4BB4FF),
+                          onTap: _scanBarcode,
+                        ),
+                      ),
                       const SizedBox(width: 10),
-                      Expanded(child: _buildActionButton(
-                        icon: Icons.search_rounded,
-                        label: 'Browse',
-                        color: Colors.purpleAccent,
-                        onTap: _showProductSelectionSheet,
-                      )),
+                      Expanded(
+                        child: _buildActionButton(
+                          icon: Icons.search_rounded,
+                          label: 'Browse',
+                          color: Colors.purpleAccent,
+                          onTap: _showProductSelectionSheet,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Cart List
                 Expanded(
-                  child: _cart.isEmpty
-                      ? _buildEmptyState()
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                          itemCount: _cart.length,
-                          itemBuilder: (context, index) {
-                            final item = _cart[index];
-                            return _buildCartItem(item, index);
-                          },
-                        ),
+                  child:
+                      _cart.isEmpty
+                          ? _buildEmptyState()
+                          : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                            itemCount: _cart.length,
+                            itemBuilder: (context, index) {
+                              final item = _cart[index];
+                              return _buildCartItem(item, index);
+                            },
+                          ),
                 ),
               ],
             ),
           ),
-          
+
           // Bottom Checkout Bar
           if (_cart.isNotEmpty)
             Positioned(
@@ -672,11 +868,13 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
               right: 0,
               child: _buildCheckoutBar(),
             ),
-            
+
           if (_isLoading)
             Container(
               color: Colors.black54,
-              child: const Center(child: CircularProgressIndicator(color: Color(0xFF4BB4FF))),
+              child: const Center(
+                child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
+              ),
             ),
         ],
       ),
@@ -698,14 +896,20 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: _selectedCustomer != null 
-                    ? const Color(0xFF4BB4FF).withOpacity(0.2) 
-                    : Colors.white.withOpacity(0.1),
+                color:
+                    _selectedCustomer != null
+                        ? const Color(0xFF4BB4FF).withOpacity(0.2)
+                        : Colors.white.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                _selectedCustomer != null ? Icons.person_rounded : Icons.person_add_rounded,
-                color: _selectedCustomer != null ? const Color(0xFF4BB4FF) : Colors.white54,
+                _selectedCustomer != null
+                    ? Icons.person_rounded
+                    : Icons.person_add_rounded,
+                color:
+                    _selectedCustomer != null
+                        ? const Color(0xFF4BB4FF)
+                        : Colors.white54,
                 size: 20,
               ),
             ),
@@ -719,22 +923,34 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                     children: [
                       Text(
                         'Customer',
-                        style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11),
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white54,
+                          fontSize: 11,
+                        ),
                       ),
                       if (_selectedCustomer == null)
                         GestureDetector(
                           onTap: _showQuickAddCustomerDialog,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF4BB4FF).withOpacity(0.15),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFF4BB4FF).withOpacity(0.3)),
+                              border: Border.all(
+                                color: const Color(0xFF4BB4FF).withOpacity(0.3),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.add_rounded, size: 10, color: Color(0xFF4BB4FF)),
+                                const Icon(
+                                  Icons.add_rounded,
+                                  size: 10,
+                                  color: Color(0xFF4BB4FF),
+                                ),
                                 const SizedBox(width: 2),
                                 Text(
                                   'Quick Add',
@@ -764,7 +980,11 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
             ),
             if (_selectedCustomer != null)
               IconButton(
-                icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 18),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white54,
+                  size: 18,
+                ),
                 onPressed: () => setState(() => _selectedCustomer = null),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -772,7 +992,11 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
             else
               const Padding(
                 padding: EdgeInsets.only(left: 8),
-                child: Icon(Icons.arrow_forward_ios_rounded, color: Colors.white24, size: 14),
+                child: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white24,
+                  size: 14,
+                ),
               ),
           ],
         ),
@@ -803,7 +1027,8 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
               label,
               style: GoogleFonts.plusJakartaSans(
                 color: Colors.white,
-                fontWeight: FontWeight.w600, fontSize: 13,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
               ),
             ),
           ],
@@ -823,17 +1048,27 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
               color: Colors.white.withOpacity(0.03),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.shopping_cart_outlined, size: 40, color: Colors.white.withOpacity(0.2)),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 40,
+              color: Colors.white.withOpacity(0.2),
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             'Cart is empty',
-            style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 14),
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white54,
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             'Scan or browse to add items',
-            style: GoogleFonts.plusJakartaSans(color: Colors.white38, fontSize: 12),
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white38,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -854,17 +1089,37 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
           builder: (BuildContext context) {
             return AlertDialog(
               backgroundColor: const Color(0xFF0A1B32),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: Text("Remove Item", style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)),
-              content: Text("Are you sure you want to remove '$name' from the cart?", style: GoogleFonts.plusJakartaSans(color: Colors.white70)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                "Remove Item",
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                "Are you sure you want to remove '$name' from the cart?",
+                style: GoogleFonts.plusJakartaSans(color: Colors.white70),
+              ),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: Text("Cancel", style: GoogleFonts.plusJakartaSans(color: Colors.white54)),
+                  child: Text(
+                    "Cancel",
+                    style: GoogleFonts.plusJakartaSans(color: Colors.white54),
+                  ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: Text("Remove", style: GoogleFonts.plusJakartaSans(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    "Remove",
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -904,7 +1159,7 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
               ),
             ),
             const SizedBox(width: 12),
-            
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -913,7 +1168,8 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                     name,
                     style: GoogleFonts.plusJakartaSans(
                       color: Colors.white,
-                      fontWeight: FontWeight.w600, fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -921,17 +1177,23 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                   const SizedBox(height: 2),
                   Text(
                     _currencyFormat.format(item['unit_price']),
-                    style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white54,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ),
             ),
-            
+
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -939,18 +1201,25 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _qtyBtn(Icons.remove_rounded, () => _updateQuantity(index, -1)),
+                      _qtyBtn(
+                        Icons.remove_rounded,
+                        () => _updateQuantity(index, -1),
+                      ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Text(
                           '${item['quantity']}',
                           style: GoogleFonts.plusJakartaSans(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold, fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
                         ),
                       ),
-                      _qtyBtn(Icons.add_rounded, () => _updateQuantity(index, 1)),
+                      _qtyBtn(
+                        Icons.add_rounded,
+                        () => _updateQuantity(index, 1),
+                      ),
                     ],
                   ),
                 ),
@@ -959,7 +1228,8 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                   _currencyFormat.format(item['subtotal']),
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF4BB4FF),
-                    fontWeight: FontWeight.bold, fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
                   ),
                 ),
               ],
@@ -1020,7 +1290,9 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: const Color(0xFF0A1B32).withOpacity(0.85),
-            border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+            border: Border(
+              top: BorderSide(color: Colors.white.withOpacity(0.1)),
+            ),
           ),
           child: Row(
             children: [
@@ -1031,7 +1303,10 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                   children: [
                     Text(
                       'Total Amount',
-                      style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11),
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white54,
+                        fontSize: 11,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -1050,8 +1325,13 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4BB4FF),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 8,
                   shadowColor: const Color(0xFF4BB4FF).withOpacity(0.4),
                 ),
@@ -1059,7 +1339,10 @@ class _CreateProformaInvoicePageState extends State<CreateProformaInvoicePage> {
                   children: [
                     Text(
                       'Generate Proforma',
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 14),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     const Icon(Icons.arrow_forward_rounded, size: 18),
@@ -1136,7 +1419,9 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> _enrichProductsWithStock(List<Map<String, dynamic>> products) async {
+  Future<List<Map<String, dynamic>>> _enrichProductsWithStock(
+    List<Map<String, dynamic>> products,
+  ) async {
     final db = await DatabaseService().database;
     List<Map<String, dynamic>> enriched = [];
     for (var product in products) {
@@ -1144,10 +1429,24 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
       final serverId = product['server_id'] as int?;
       int bulkQty = 0;
       List<Map<String, dynamic>> stockList = [];
-      if (serverId != null) stockList = await db.query('stocks', where: 'product_id = ?', whereArgs: [serverId]);
-      if (stockList.isEmpty) stockList = await db.query('stocks', where: 'product_id = ?', whereArgs: [localId]);
-      if (stockList.isNotEmpty) bulkQty = stockList.first['quantity'] as int? ?? 0;
-      final itemRes = await db.rawQuery("SELECT COUNT(*) as count FROM product_items WHERE product_id = ? AND status = 'available'", [localId]);
+      if (serverId != null)
+        stockList = await db.query(
+          'stocks',
+          where: 'product_id = ?',
+          whereArgs: [serverId],
+        );
+      if (stockList.isEmpty)
+        stockList = await db.query(
+          'stocks',
+          where: 'product_id = ?',
+          whereArgs: [localId],
+        );
+      if (stockList.isNotEmpty)
+        bulkQty = stockList.first['quantity'] as int? ?? 0;
+      final itemRes = await db.rawQuery(
+        "SELECT COUNT(*) as count FROM product_items WHERE product_id = ? AND status = 'available'",
+        [localId],
+      );
       final int itemQty = itemRes.first['count'] as int? ?? 0;
       enriched.add({...product, 'stock_quantity': bulkQty + itemQty});
     }
@@ -1156,9 +1455,12 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredResults = _lowStockOnly
-        ? _searchResults.where((p) => (p['stock_quantity'] as int? ?? 0) <= 10).toList()
-        : _searchResults;
+    final filteredResults =
+        _lowStockOnly
+            ? _searchResults
+                .where((p) => (p['stock_quantity'] as int? ?? 0) <= 10)
+                .toList()
+            : _searchResults;
 
     return Column(
       children: [
@@ -1166,16 +1468,27 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Select Products',
-                style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
         ),
-        
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: TextField(
@@ -1187,14 +1500,20 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
               prefixIcon: const Icon(Icons.search, color: Colors.white54),
               filled: true,
               fillColor: Colors.white.withOpacity(0.1),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -1211,46 +1530,59 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
                 labelStyle: GoogleFonts.plusJakartaSans(
                   color: _lowStockOnly ? Colors.orange : Colors.white70,
                   fontSize: 11,
-                  fontWeight: _lowStockOnly ? FontWeight.bold : FontWeight.normal,
+                  fontWeight:
+                      _lowStockOnly ? FontWeight.bold : FontWeight.normal,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: _lowStockOnly ? Colors.orange : Colors.white.withOpacity(0.1),
+                    color:
+                        _lowStockOnly
+                            ? Colors.orange
+                            : Colors.white.withOpacity(0.1),
                   ),
                 ),
               ),
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
 
         Expanded(
-          child: _isSearching
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF4BB4FF)))
-              : filteredResults.isEmpty
+          child:
+              _isSearching
+                  ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
+                  )
+                  : filteredResults.isEmpty
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.inventory_2_outlined, size: 48, color: Colors.white.withOpacity(0.2)),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No products found',
-                            style: GoogleFonts.plusJakartaSans(color: Colors.white54),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: 48,
+                          color: Colors.white.withOpacity(0.2),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No products found',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white54,
                           ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: filteredResults.length,
-                      itemBuilder: (context, index) {
-                        final product = filteredResults[index];
-                        return _buildProductItem(product);
-                      },
+                        ),
+                      ],
                     ),
+                  )
+                  : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: filteredResults.length,
+                    itemBuilder: (context, index) {
+                      final product = filteredResults[index];
+                      return _buildProductItem(product);
+                    },
+                  ),
         ),
       ],
     );
@@ -1290,14 +1622,24 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   'SKU: ${product['sku'] ?? 'N/A'} • Stock: ${product['stock_quantity'] ?? 0}',
                   style: GoogleFonts.plusJakartaSans(
-                    color: (product['stock_quantity'] as int? ?? 0) <= 10 ? Colors.orange : Colors.white54,
+                    color:
+                        (product['stock_quantity'] as int? ?? 0) <= 10
+                            ? Colors.orange
+                            : Colors.white54,
                     fontSize: 11,
-                    fontWeight: (product['stock_quantity'] as int? ?? 0) <= 10 ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        (product['stock_quantity'] as int? ?? 0) <= 10
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                   ),
                 ),
               ],
@@ -1307,8 +1649,15 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${NumberFormat('#,##0.00', 'en_US').format(product['selling_price'] ?? 0.0)}',
-                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF4BB4FF), fontWeight: FontWeight.bold, fontSize: 13),
+                NumberFormat(
+                  '#,##0.00',
+                  'en_US',
+                ).format(product['selling_price'] ?? 0.0),
+                style: GoogleFonts.plusJakartaSans(
+                  color: const Color(0xFF4BB4FF),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
               const SizedBox(height: 4),
               ElevatedButton(
@@ -1316,12 +1665,20 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4BB4FF).withOpacity(0.2),
                   foregroundColor: const Color(0xFF4BB4FF),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   minimumSize: Size.zero,
                   elevation: 0,
                 ),
-                child: const Text('Add', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Add',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -1337,10 +1694,21 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
       return Image.network(
         remoteUrl,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Center(child: Text(name[0], style: const TextStyle(color: Colors.white54))),
+        errorBuilder:
+            (_, __, ___) => Center(
+              child: Text(
+                name[0],
+                style: const TextStyle(color: Colors.white54),
+              ),
+            ),
       );
     }
-    return Center(child: Text(name.isNotEmpty ? name[0] : '?', style: const TextStyle(color: Colors.white54)));
+    return Center(
+      child: Text(
+        name.isNotEmpty ? name[0] : '?',
+        style: const TextStyle(color: Colors.white54),
+      ),
+    );
   }
 }
 
@@ -1379,10 +1747,18 @@ class _CustomerSearchSheetState extends State<_CustomerSearchSheet> {
       if (query.isEmpty) {
         _filteredCustomers = _allCustomers;
       } else {
-        _filteredCustomers = _allCustomers.where((c) =>
-          (c['name'] ?? '').toString().toLowerCase().contains(query.toLowerCase()) ||
-          (c['phone'] ?? '').toString().toLowerCase().contains(query.toLowerCase())
-        ).toList();
+        _filteredCustomers =
+            _allCustomers
+                .where(
+                  (c) =>
+                      (c['name'] ?? '').toString().toLowerCase().contains(
+                        query.toLowerCase(),
+                      ) ||
+                      (c['phone'] ?? '').toString().toLowerCase().contains(
+                        query.toLowerCase(),
+                      ),
+                )
+                .toList();
       }
     });
   }
@@ -1395,48 +1771,93 @@ class _CustomerSearchSheetState extends State<_CustomerSearchSheet> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(height: 16),
               TextField(
                 onChanged: _filter,
                 style: const TextStyle(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Search customer...',
-                  hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+                  hintStyle: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 13,
+                  ),
                   prefixIcon: const Icon(Icons.search, color: Colors.white54),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
               ),
             ],
           ),
         ),
         Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF4BB4FF)))
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: _filteredCustomers.length,
-                  separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
-                  itemBuilder: (context, index) {
-                    final customer = _filteredCustomers[index];
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      leading: CircleAvatar(
-                        backgroundColor: const Color(0xFF4BB4FF).withOpacity(0.2),
-                        child: Text(
-                          (customer['name'] as String)[0].toUpperCase(),
-                          style: const TextStyle(color: Color(0xFF4BB4FF), fontWeight: FontWeight.bold),
+          child:
+              _isLoading
+                  ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
+                  )
+                  : ListView.separated(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    itemCount: _filteredCustomers.length,
+                    separatorBuilder:
+                        (_, __) =>
+                            const Divider(color: Colors.white10, height: 1),
+                    itemBuilder: (context, index) {
+                      final customer = _filteredCustomers[index];
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                      ),
-                      title: Text(customer['name'] ?? 'Unknown', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
-                      subtitle: Text('Phone: ${customer['phone'] ?? 'N/A'}', style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11)),
-                      onTap: () => widget.onSelect(customer),
-                    );
-                  },
-                ),
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(
+                            0xFF4BB4FF,
+                          ).withOpacity(0.2),
+                          child: Text(
+                            (customer['name'] as String)[0].toUpperCase(),
+                            style: const TextStyle(
+                              color: Color(0xFF4BB4FF),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          customer['name'] ?? 'Unknown',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Phone: ${customer['phone'] ?? 'N/A'}',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white54,
+                            fontSize: 11,
+                          ),
+                        ),
+                        onTap: () => widget.onSelect(customer),
+                      );
+                    },
+                  ),
         ),
       ],
     );

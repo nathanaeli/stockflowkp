@@ -298,6 +298,14 @@
   "@emailInvoice": {
     "description": "Email invoice button text"
   },
+  "shareInvoice": "Share Invoice",
+  "@shareInvoice": {
+    "description": "Share invoice button text"
+  },
+  "shareViaWhatsApp": "Share via WhatsApp",
+  "@shareViaWhatsApp": {
+    "description": "WhatsApp share button text"
+  },
   "paid": "PAID",
   "@paid": {
     "description": "Paid status indicator"

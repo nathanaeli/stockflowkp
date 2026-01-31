@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:barcode_widget/barcode_widget.dart';
@@ -19,7 +17,9 @@ class BarcodeGeneratorScreen extends StatefulWidget {
 }
 
 class _BarcodeGeneratorScreenState extends State<BarcodeGeneratorScreen> {
-  final TextEditingController _quantityController = TextEditingController(text: '50');
+  final TextEditingController _quantityController = TextEditingController(
+    text: '50',
+  );
   bool _isGenerating = false;
   List<String> _generatedBarcodes = [];
   bool _showPreview = false;
@@ -84,7 +84,11 @@ class _BarcodeGeneratorScreenState extends State<BarcodeGeneratorScreen> {
       const int rowsPerPage = 10;
       const int barcodesPerPage = barcodesPerRow * rowsPerPage;
 
-      for (int pageStart = 0; pageStart < _generatedBarcodes.length; pageStart += barcodesPerPage) {
+      for (
+        int pageStart = 0;
+        pageStart < _generatedBarcodes.length;
+        pageStart += barcodesPerPage
+      ) {
         final pageBarcodes = _generatedBarcodes.sublist(
           pageStart,
           (pageStart + barcodesPerPage) > _generatedBarcodes.length
@@ -147,7 +151,9 @@ class _BarcodeGeneratorScreenState extends State<BarcodeGeneratorScreen> {
                   pw.Container(
                     padding: const pw.EdgeInsets.all(8),
                     decoration: const pw.BoxDecoration(
-                      border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
+                      border: pw.Border(
+                        top: pw.BorderSide(color: PdfColors.grey300),
+                      ),
                     ),
                     child: pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -178,7 +184,9 @@ class _BarcodeGeneratorScreenState extends State<BarcodeGeneratorScreen> {
 
       // Save PDF to temporary directory
       final output = await getTemporaryDirectory();
-      final file = File('${output.path}/smartbiz_barcodes_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      final file = File(
+        '${output.path}/smartbiz_barcodes_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      );
       await file.writeAsBytes(await pdf.save());
 
       // Open the PDF instead of sharing
@@ -216,7 +224,10 @@ class _BarcodeGeneratorScreenState extends State<BarcodeGeneratorScreen> {
       rows.add(
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-          children: rowBarcodes.map((barcode) => _buildPdfBarcodeItem(barcode)).toList(),
+          children:
+              rowBarcodes
+                  .map((barcode) => _buildPdfBarcodeItem(barcode))
+                  .toList(),
         ),
       );
 
@@ -316,236 +327,293 @@ class _BarcodeGeneratorScreenState extends State<BarcodeGeneratorScreen> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-        padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Input Section
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+            padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Input Section
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF4BB4FF).withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.settings_rounded,
-                                color: Color(0xFF4BB4FF),
-                                size: 18,
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFF4BB4FF,
+                                    ).withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.settings_rounded,
+                                    color: Color(0xFF4BB4FF),
+                                    size: 18,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Barcode Generation Settings',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 14 * fontScale,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                  sigmaX: 10,
+                                  sigmaY: 10,
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: TextField(
+                                    controller: _quantityController,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.white,
+                                      fontSize: 14 * fontScale,
+                                    ),
+                                    decoration: InputDecoration(
+                                      labelText: 'Quantity (1-200)',
+                                      hintText:
+                                          'Number of barcodes to generate',
+                                      labelStyle: GoogleFonts.plusJakartaSans(
+                                        color: Colors.white70,
+                                        fontSize: 13 * fontScale,
+                                      ),
+                                      hintStyle: GoogleFonts.plusJakartaSans(
+                                        color: Colors.white38,
+                                        fontSize: 13 * fontScale,
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 14,
+                                          ),
+                                      prefixIcon: Container(
+                                        margin: const EdgeInsets.only(
+                                          left: 12,
+                                          right: 8,
+                                        ),
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFF4BB4FF,
+                                          ).withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.format_list_numbered_rounded,
+                                          color: Color(0xFF4BB4FF),
+                                          size: 18,
+                                        ),
+                                      ),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Barcode Generation Settings',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14 * fontScale,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            const SizedBox(height: 20),
+                            Container(
+                              width: double.infinity,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF4BB4FF),
+                                    Color(0xFF1E88E5),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF4BB4FF,
+                                    ).withOpacity(0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed:
+                                    _isGenerating ? null : _generateBarcodes,
+                                icon:
+                                    _isGenerating
+                                        ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
+                                          ),
+                                        )
+                                        : const Icon(
+                                          Icons.qr_code_scanner_rounded,
+                                          size: 18,
+                                        ),
+                                label: Text(
+                                  _isGenerating
+                                      ? 'Generating...'
+                                      : 'Generate Barcodes',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 14 * fontScale,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.white.withOpacity(0.2)),
-                              ),
-                              child: TextField(
-                                controller: _quantityController,
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white,
-                                  fontSize: 14 * fontScale,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'Quantity (1-200)',
-                                  hintText: 'Number of barcodes to generate',
-                                  labelStyle: GoogleFonts.plusJakartaSans(
-                                    color: Colors.white70,
-                                    fontSize: 13 * fontScale,
-                                  ),
-                                  hintStyle: GoogleFonts.plusJakartaSans(
-                                    color: Colors.white38,
-                                    fontSize: 13 * fontScale,
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  prefixIcon: Container(
-                                    margin: const EdgeInsets.only(left: 12, right: 8),
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF4BB4FF).withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.format_list_numbered_rounded,
-                                      color: Color(0xFF4BB4FF),
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
-                                keyboardType: TextInputType.number,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          width: double.infinity,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF4BB4FF), Color(0xFF1E88E5)],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF4BB4FF).withOpacity(0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: ElevatedButton.icon(
-                            onPressed: _isGenerating ? null : _generateBarcodes,
-                            icon: _isGenerating
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  )
-                                : const Icon(Icons.qr_code_scanner_rounded, size: 18),
-                            label: Text(
-                              _isGenerating ? 'Generating...' : 'Generate Barcodes',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14 * fontScale,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-            // Preview Section
-            if (_showPreview && _generatedBarcodes.isNotEmpty) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Generated Barcodes (${_generatedBarcodes.length})',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14 * fontScale,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: _generateAndSavePdf,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4BB4FF).withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF4BB4FF).withOpacity(0.3)),
+                // Preview Section
+                if (_showPreview && _generatedBarcodes.isNotEmpty) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Generated Barcodes (${_generatedBarcodes.length})',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14 * fontScale,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.picture_as_pdf_rounded, size: 14, color: Color(0xFF4BB4FF)),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Export PDF',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11 * fontScale,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF4BB4FF),
+                      GestureDetector(
+                        onTap: _generateAndSavePdf,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4BB4FF).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFF4BB4FF).withOpacity(0.3),
                             ),
                           ),
-                        ],
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.picture_as_pdf_rounded,
+                                size: 14,
+                                color: Color(0xFF4BB4FF),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Export PDF',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11 * fontScale,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4BB4FF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                      child: Container(
+                        height: size.height * 0.5,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                          ),
+                        ),
+                        child: GridView.builder(
+                          padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    size.width > 600
+                                        ? 4
+                                        : (size.width > 400 ? 3 : 2),
+                                crossAxisSpacing: isSmallScreen ? 10 : 16,
+                                mainAxisSpacing: isSmallScreen ? 10 : 16,
+                                childAspectRatio: 0.9,
+                              ),
+                          itemCount: _generatedBarcodes.length,
+                          itemBuilder: (context, index) {
+                            return AnimatedOpacity(
+                              opacity: 1.0,
+                              duration: const Duration(milliseconds: 500),
+                              child: _buildBarcodeItem(
+                                _generatedBarcodes[index],
+                                fontScale,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                  child: Container(
-                    height: size.height * 0.5,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
-                    ),
-                    child: GridView.builder(
-                      padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: size.width > 600 ? 4 : (size.width > 400 ? 3 : 2),
-                        crossAxisSpacing: isSmallScreen ? 10 : 16,
-                        mainAxisSpacing: isSmallScreen ? 10 : 16,
-                        childAspectRatio: 0.9,
-                      ),
-                      itemCount: _generatedBarcodes.length,
-                      itemBuilder: (context, index) {
-                        return AnimatedOpacity(
-                          opacity: 1.0,
-                          duration: const Duration(milliseconds: 500),
-                          child: _buildBarcodeItem(_generatedBarcodes[index], fontScale),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildGlassIconButton({required IconData icon, required VoidCallback? onTap}) {
+  Widget _buildGlassIconButton({
+    required IconData icon,
+    required VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(

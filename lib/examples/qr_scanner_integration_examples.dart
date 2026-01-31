@@ -4,7 +4,7 @@ import '../utils/qr_scanner_helper.dart';
 /// Example page showing how to integrate the enhanced QR scanner
 /// for sales or inventory management
 class SalesWithQRScanner extends StatefulWidget {
-  const SalesWithQRScanner({Key? key}) : super(key: key);
+  const SalesWithQRScanner({super.key});
 
   @override
   State<SalesWithQRScanner> createState() => _SalesWithQRScannerState();
@@ -43,50 +43,53 @@ class _SalesWithQRScannerState extends State<SalesWithQRScanner> {
 
           // Scanned Items List
           Expanded(
-            child: _scannedItems.isEmpty
-                ? const Center(
-                    child: Text(
-                      'No items scanned yet',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _scannedItems.length,
-                    itemBuilder: (context, index) {
-                      final item = _scannedItems[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: _getStatusColor(item['status']),
-                            child: Text(
-                              item['name']?.substring(0, 1) ?? '?',
-                              style: const TextStyle(color: Colors.white),
+            child:
+                _scannedItems.isEmpty
+                    ? const Center(
+                      child: Text(
+                        'No items scanned yet',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    )
+                    : ListView.builder(
+                      itemCount: _scannedItems.length,
+                      itemBuilder: (context, index) {
+                        final item = _scannedItems[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: _getStatusColor(item['status']),
+                              child: Text(
+                                item['name']?.substring(0, 1) ?? '?',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            title: Text(item['name'] ?? 'Unknown Product'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (item['sku'] != null)
+                                  Text('SKU: ${item['sku']}'),
+                                if (item['selling_price'] != null)
+                                  Text('Price: \$${item['selling_price']}'),
+                                Text('QR: ${item['qrCode']}'),
+                                Text(
+                                  'Status: ${item['status'] ?? 'available'}',
+                                ),
+                              ],
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _removeItem(index),
                             ),
                           ),
-                          title: Text(item['name'] ?? 'Unknown Product'),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (item['sku'] != null)
-                                Text('SKU: ${item['sku']}'),
-                              if (item['selling_price'] != null)
-                                Text('Price: \$${item['selling_price']}'),
-                              Text('QR: ${item['qrCode']}'),
-                              Text('Status: ${item['status'] ?? 'available'}'),
-                            ],
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _removeItem(index),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
           ),
 
           // Total and Checkout
@@ -137,9 +140,9 @@ class _SalesWithQRScannerState extends State<SalesWithQRScanner> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error scanning: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error scanning: $e')));
     }
   }
 
@@ -171,16 +174,17 @@ class _SalesWithQRScannerState extends State<SalesWithQRScanner> {
   void _showProductNotFoundDialog(String qrCode) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Product Not Found'),
-        content: Text('No product found for QR code: $qrCode'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Product Not Found'),
+            content: Text('No product found for QR code: $qrCode'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -199,7 +203,9 @@ class _SalesWithQRScannerState extends State<SalesWithQRScanner> {
 
   void _checkout() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Processing sale of ${_scannedItems.length} items')),
+      SnackBar(
+        content: Text('Processing sale of ${_scannedItems.length} items'),
+      ),
     );
   }
 

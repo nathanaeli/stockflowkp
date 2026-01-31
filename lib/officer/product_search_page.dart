@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -42,11 +41,12 @@ class _ProductSearchPageState extends State<ProductSearchPage> {
         _filteredProducts = List.from(_allProducts);
       } else {
         final lowerQuery = query.toLowerCase();
-        _filteredProducts = _allProducts.where((p) {
-          final name = p['name']?.toString().toLowerCase() ?? '';
-          final sku = p['sku']?.toString().toLowerCase() ?? '';
-          return name.contains(lowerQuery) || sku.contains(lowerQuery);
-        }).toList();
+        _filteredProducts =
+            _allProducts.where((p) {
+              final name = p['name']?.toString().toLowerCase() ?? '';
+              final sku = p['sku']?.toString().toLowerCase() ?? '';
+              return name.contains(lowerQuery) || sku.contains(lowerQuery);
+            }).toList();
       }
     });
   }
@@ -55,49 +55,61 @@ class _ProductSearchPageState extends State<ProductSearchPage> {
     final qtyController = TextEditingController(text: '1');
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0A1B32),
-        title: Text('Enter Quantity', style: GoogleFonts.plusJakartaSans(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              product['name'],
-              style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 14),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF0A1B32),
+            title: Text(
+              'Enter Quantity',
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: qtyController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Quantity',
-                labelStyle: const TextStyle(color: Colors.white54),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.1),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  product['name'],
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: qtyController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    labelStyle: const TextStyle(color: Colors.white54),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.1),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  autofocus: true,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              autofocus: true,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+              ElevatedButton(
+                onPressed: () {
+                  final qty = int.tryParse(qtyController.text) ?? 1;
+                  if (qty > 0) {
+                    Navigator.pop(context);
+                    Navigator.pop(context, {
+                      'product': product,
+                      'quantity': qty,
+                    });
+                  }
+                },
+                child: const Text('Add'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              final qty = int.tryParse(qtyController.text) ?? 1;
-              if (qty > 0) {
-                Navigator.pop(context);
-                Navigator.pop(context, {'product': product, 'quantity': qty});
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -109,10 +121,19 @@ class _ProductSearchPageState extends State<ProductSearchPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('Search Products', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Search Products',
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -137,31 +158,45 @@ class _ProductSearchPageState extends State<ProductSearchPage> {
                     prefixIcon: const Icon(Icons.search, color: Colors.white54),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
               ),
               Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
-                        itemCount: _filteredProducts.length,
-                        itemBuilder: (context, index) {
-                          final product = _filteredProducts[index];
-                          return ListTile(
-                            title: Text(product['name'], style: GoogleFonts.plusJakartaSans(color: Colors.white)),
-                            subtitle: Text(
-                              'SKU: ${product['sku']} • Stock: ${product['initial_stock']}',
-                              style: GoogleFonts.plusJakartaSans(color: Colors.white54),
-                            ),
-                            trailing: Text(
-                              'TZS ${_currencyFormat.format(product['selling_price'])}',
-                              style: GoogleFonts.plusJakartaSans(color: const Color(0xFF4BB4FF), fontWeight: FontWeight.bold),
-                            ),
-                            onTap: () => _selectProduct(product),
-                          );
-                        },
-                      ),
+                child:
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                          itemCount: _filteredProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = _filteredProducts[index];
+                            return ListTile(
+                              title: Text(
+                                product['name'],
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'SKU: ${product['sku']} • Stock: ${product['initial_stock']}',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white54,
+                                ),
+                              ),
+                              trailing: Text(
+                                'TZS ${_currencyFormat.format(product['selling_price'])}',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: const Color(0xFF4BB4FF),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onTap: () => _selectProduct(product),
+                            );
+                          },
+                        ),
               ),
             ],
           ),

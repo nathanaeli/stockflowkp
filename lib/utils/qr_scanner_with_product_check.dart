@@ -5,20 +5,23 @@ import 'package:permission_handler/permission_handler.dart';
 import '../services/database_service.dart';
 
 class QRCodeScannerWithProductCheck extends StatefulWidget {
-  final Function(Map<String, dynamic>? productInfo, String? qrCode) onProductFound;
+  final Function(Map<String, dynamic>? productInfo, String? qrCode)
+  onProductFound;
   final String? initialMessage;
 
   const QRCodeScannerWithProductCheck({
-    Key? key,
+    super.key,
     required this.onProductFound,
     this.initialMessage,
-  }) : super(key: key);
+  });
 
   @override
-  State<QRCodeScannerWithProductCheck> createState() => _QRCodeScannerWithProductCheckState();
+  State<QRCodeScannerWithProductCheck> createState() =>
+      _QRCodeScannerWithProductCheckState();
 }
 
-class _QRCodeScannerWithProductCheckState extends State<QRCodeScannerWithProductCheck> {
+class _QRCodeScannerWithProductCheckState
+    extends State<QRCodeScannerWithProductCheck> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
   bool hasPermission = false;
@@ -61,7 +64,9 @@ class _QRCodeScannerWithProductCheckState extends State<QRCodeScannerWithProduct
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
-      if (isScanning && scanData.code != null && scanData.code != lastScannedCode) {
+      if (isScanning &&
+          scanData.code != null &&
+          scanData.code != lastScannedCode) {
         lastScannedCode = scanData.code;
         isScanning = false;
         controller.pauseCamera();
@@ -77,8 +82,10 @@ class _QRCodeScannerWithProductCheckState extends State<QRCodeScannerWithProduct
 
     try {
       final databaseService = DatabaseService();
-      final productInfo = await databaseService.findProductByBarcodeOrSku(qrCode);
-      
+      final productInfo = await databaseService.findProductByBarcodeOrSku(
+        qrCode,
+      );
+
       // Pass both product info and the original QR code
       widget.onProductFound(productInfo, qrCode);
     } catch (e) {
@@ -146,7 +153,11 @@ class _QRCodeScannerWithProductCheckState extends State<QRCodeScannerWithProduct
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white, size: 32),
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                    size: 32,
+                  ),
                   onPressed: _resumeScanning,
                 ),
               ],
@@ -168,10 +179,7 @@ class _QRCodeScannerWithProductCheckState extends State<QRCodeScannerWithProduct
                       const SizedBox(height: 16),
                       const Text(
                         'Checking product...',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ],
                   ),
@@ -189,10 +197,7 @@ class _QRCodeScannerWithProductCheckState extends State<QRCodeScannerWithProduct
                 if (widget.initialMessage != null)
                   Text(
                     widget.initialMessage!,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                 const SizedBox(height: 16),
@@ -259,10 +264,7 @@ class _QRCodeScannerWithProductCheckState extends State<QRCodeScannerWithProduct
               const SizedBox(height: 16),
               const Text(
                 'Please grant camera permission to scan QR codes.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
@@ -271,7 +273,10 @@ class _QRCodeScannerWithProductCheckState extends State<QRCodeScannerWithProduct
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 15,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

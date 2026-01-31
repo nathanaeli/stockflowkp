@@ -566,10 +566,9 @@ class SyncService {
     };
 
     // Calculate overall success with null safety
-    final productsResult = results['products'] as Map<String, dynamic>? ?? {};
-    final itemsResult = results['product_items'] as Map<String, dynamic>? ?? {};
-    final stockResult =
-        results['stock_movements'] as Map<String, dynamic>? ?? {};
+    final productsResult = results['products'] ?? {};
+    final itemsResult = results['product_items'] ?? {};
+    final stockResult = results['stock_movements'] ?? {};
 
     final allProductsSuccess = productsResult['success'] as bool? ?? false;
     final allItemsSuccess = itemsResult['success'] as bool? ?? false;
@@ -696,9 +695,7 @@ class SyncService {
       }
 
       // If duka_id is missing on product, try to get default from officer assignments
-      if (dukaId == null) {
-        dukaId = await _getDefaultDukaId();
-      }
+      dukaId ??= await _getDefaultDukaId();
 
       if (dukaId == null) {
         print('❌ Missing duka_id for item sync');
@@ -1236,8 +1233,9 @@ class SyncService {
           whereArgs: [item['product_local_id']],
         );
         int? productServerId;
-        if (prodRes.isNotEmpty)
+        if (prodRes.isNotEmpty) {
           productServerId = prodRes.first['server_id'] as int?;
+        }
 
         if (productServerId == null) {
           return {
@@ -1460,12 +1458,11 @@ class SyncService {
     };
 
     // Calculate overall success
-    final productsResult = results['products'] as Map<String, dynamic>? ?? {};
-    final itemsResult = results['product_items'] as Map<String, dynamic>? ?? {};
-    final stockMovementsResult =
-        results['stock_movements'] as Map<String, dynamic>? ?? {};
-    final stocksResult = results['stocks'] as Map<String, dynamic>? ?? {};
-    final customersResult = results['customers'] as Map<String, dynamic>? ?? {};
+    final productsResult = results['products'] ?? {};
+    final itemsResult = results['product_items'] ?? {};
+    final stockMovementsResult = results['stock_movements'] ?? {};
+    final stocksResult = results['stocks'] ?? {};
+    final customersResult = results['customers'] ?? {};
 
     final allProductsSuccess = productsResult['success'] as bool? ?? false;
     final allItemsSuccess = itemsResult['success'] as bool? ?? false;

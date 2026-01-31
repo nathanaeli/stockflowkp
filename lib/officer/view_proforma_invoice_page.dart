@@ -13,7 +13,8 @@ class ViewProformaInvoicePage extends StatefulWidget {
   const ViewProformaInvoicePage({super.key});
 
   @override
-  State<ViewProformaInvoicePage> createState() => _ViewProformaInvoicePageState();
+  State<ViewProformaInvoicePage> createState() =>
+      _ViewProformaInvoicePageState();
 }
 
 class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
@@ -50,26 +51,46 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
   Future<void> _deleteProformaInvoice(int id) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0A1B32),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Proforma Invoice', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Text('Are you sure you want to delete this proforma invoice?', style: GoogleFonts.plusJakartaSans(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF0A1B32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: Text('Delete', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+            title: Text(
+              'Delete Proforma Invoice',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              'Are you sure you want to delete this proforma invoice?',
+              style: GoogleFonts.plusJakartaSans(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white54),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
+                ),
+                child: Text(
+                  'Delete',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirmed == true) {
@@ -78,13 +99,19 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
         await _loadProformaInvoices(); // Refresh the list
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Proforma invoice deleted successfully'), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text('Proforma invoice deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete: $e'), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text('Failed to delete: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
@@ -96,25 +123,33 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (_, controller) => Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF0A1B32).withOpacity(0.95),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+      builder:
+          (context) => DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder:
+                (_, controller) => Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0A1B32).withOpacity(0.95),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: _ProformaDetailsSheet(invoice: invoice),
+                    ),
+                  ),
+                ),
           ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: _ProformaDetailsSheet(invoice: invoice),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -126,7 +161,10 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -151,15 +189,24 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
               gradient: RadialGradient(
                 center: Alignment.topLeft,
                 radius: 1.5,
-                colors: [Color(0xFF1E4976), Color(0xFF0A1B32), Color(0xFF020B18)],
+                colors: [
+                  Color(0xFF1E4976),
+                  Color(0xFF0A1B32),
+                  Color(0xFF020B18),
+                ],
               ),
             ),
           ),
-          
+
           SafeArea(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF4BB4FF)))
-                : _proformaInvoices.isEmpty
+            child:
+                _isLoading
+                    ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF4BB4FF),
+                      ),
+                    )
+                    : _proformaInvoices.isEmpty
                     ? _buildEmptyState()
                     : _buildInvoiceList(),
           ),
@@ -179,17 +226,27 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
               color: Colors.white.withOpacity(0.03),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.request_quote_outlined, size: 40, color: Colors.white.withOpacity(0.2)),
+            child: Icon(
+              Icons.request_quote_outlined,
+              size: 40,
+              color: Colors.white.withOpacity(0.2),
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             'No Proforma Invoices',
-            style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 16),
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white54,
+              fontSize: 16,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             'Create your first proforma invoice',
-            style: GoogleFonts.plusJakartaSans(color: Colors.white38, fontSize: 12),
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white38,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -215,7 +272,7 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
     final customerData = jsonDecode(invoice['customer_data'] as String);
     final itemsData = jsonDecode(invoice['items_data'] as String);
     final createdAt = DateTime.parse(invoice['created_at'] as String);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -239,7 +296,11 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
                       color: const Color(0xFF4BB4FF).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.request_quote_rounded, color: Color(0xFF4BB4FF), size: 20),
+                    child: const Icon(
+                      Icons.request_quote_rounded,
+                      color: Color(0xFF4BB4FF),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -269,7 +330,9 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        _currencyFormat.format(invoice['total_amount'] as double),
+                        _currencyFormat.format(
+                          invoice['total_amount'] as double,
+                        ),
                         style: GoogleFonts.plusJakartaSans(
                           color: const Color(0xFF4BB4FF),
                           fontWeight: FontWeight.bold,
@@ -278,7 +341,10 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
                       ),
                       const SizedBox(height: 2),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
@@ -296,7 +362,7 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
                   ),
                 ],
               ),
-              
+
               if ((invoice['note'] as String?)?.isNotEmpty == true) ...[
                 const SizedBox(height: 12),
                 Container(
@@ -307,7 +373,11 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.note_alt_outlined, color: Colors.white54, size: 14),
+                      const Icon(
+                        Icons.note_alt_outlined,
+                        color: Colors.white54,
+                        size: 14,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -324,29 +394,41 @@ class _ViewProformaInvoicePageState extends State<ViewProformaInvoicePage> {
                   ),
                 ),
               ],
-              
+
               const SizedBox(height: 12),
-              
+
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => _showProformaDetails(invoice),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4BB4FF).withOpacity(0.2),
+                        backgroundColor: const Color(
+                          0xFF4BB4FF,
+                        ).withOpacity(0.2),
                         foregroundColor: const Color(0xFF4BB4FF),
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text('View Details', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w600)),
+                      child: Text(
+                        'View Details',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    onPressed: () => _deleteProformaInvoice(invoice['id'] as int),
-                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                    onPressed:
+                        () => _deleteProformaInvoice(invoice['id'] as int),
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: Colors.redAccent,
+                    ),
                     constraints: const BoxConstraints(),
                     padding: EdgeInsets.zero,
                   ),
@@ -378,16 +460,27 @@ class _ProformaDetailsSheet extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Proforma Invoice Details',
-                style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
         ),
-        
+
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -407,72 +500,105 @@ class _ProformaDetailsSheet extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.person_rounded, color: Color(0xFF4BB4FF), size: 20),
+                          const Icon(
+                            Icons.person_rounded,
+                            color: Color(0xFF4BB4FF),
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
-                          Text('Customer', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600)),
+                          Text(
+                            'Customer',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text(
                         customerData['name'] ?? 'Walk-in Customer',
-                        style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       if (customerData['phone'] != null) ...[
                         const SizedBox(height: 4),
                         Text(
                           customerData['phone'] as String,
-                          style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 12),
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Items
-                Text('Items', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                Text(
+                  'Items',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                
-                ...itemsData.map((item) => Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['name'] as String,
-                              style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Qty: ${item['quantity']} × ${_currencyFormat.format(item['unit_price'] as double)}',
-                              style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11),
-                            ),
-                          ],
+
+                ...itemsData.map(
+                  (item) => Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['name'] as String,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Qty: ${item['quantity']} × ${_currencyFormat.format(item['unit_price'] as double)}',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(
-                        _currencyFormat.format(item['subtotal'] as double),
-                        style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF4BB4FF),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                        Text(
+                          _currencyFormat.format(item['subtotal'] as double),
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF4BB4FF),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )),
-                
+                ),
+
                 const SizedBox(height: 16),
-                
+
                 // Total
                 Container(
                   width: double.infinity,
@@ -480,17 +606,25 @@ class _ProformaDetailsSheet extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFF4BB4FF).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF4BB4FF).withOpacity(0.3)),
+                    border: Border.all(
+                      color: const Color(0xFF4BB4FF).withOpacity(0.3),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Total Amount',
-                        style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       Text(
-                        _currencyFormat.format(invoice['total_amount'] as double),
+                        _currencyFormat.format(
+                          invoice['total_amount'] as double,
+                        ),
                         style: GoogleFonts.plusJakartaSans(
                           color: const Color(0xFF4BB4FF),
                           fontSize: 18,
@@ -500,10 +634,17 @@ class _ProformaDetailsSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 if ((invoice['note'] as String?)?.isNotEmpty == true) ...[
                   const SizedBox(height: 16),
-                  Text('Note', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Note',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
@@ -514,18 +655,24 @@ class _ProformaDetailsSheet extends StatelessWidget {
                     ),
                     child: Text(
                       invoice['note'] as String,
-                      style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 13),
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
-                
+
                 const SizedBox(height: 16),
-                
+
                 Text(
                   'Created: ${DateFormat('MMM d, yyyy • h:mm a').format(createdAt)}',
-                  style: GoogleFonts.plusJakartaSans(color: Colors.white54, fontSize: 11),
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white54,
+                    fontSize: 11,
+                  ),
                 ),
-                
+
                 const SizedBox(height: 20),
 
                 SizedBox(
@@ -566,9 +713,9 @@ class _ProformaDetailsSheet extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CreateSalePage(
-                            proformaInvoice: invoice,
-                          ),
+                          builder:
+                              (context) =>
+                                  CreateSalePage(proformaInvoice: invoice),
                         ),
                       );
                     },
@@ -603,23 +750,26 @@ class _ProformaDetailsSheet extends StatelessWidget {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (ctx) => const Center(child: CircularProgressIndicator(color: Color(0xFF4BB4FF))),
+        builder:
+            (ctx) => const Center(
+              child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
+            ),
       );
 
       final db = DatabaseService();
       final tenant = await db.getTenantAccount();
-      
+
       final doc = pw.Document();
-      
+
       final customerData = jsonDecode(invoice['customer_data'] as String);
       final itemsData = jsonDecode(invoice['items_data'] as String) as List;
       final createdAt = DateTime.parse(invoice['created_at'] as String);
       final totalAmount = invoice['total_amount'] as double;
       final note = invoice['note'] as String?;
-      
+
       final primaryColor = PdfColor.fromInt(0xFF4BB4FF);
       final lightGrey = PdfColor.fromInt(0xFFF5F5F5);
-      
+
       doc.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
@@ -635,9 +785,17 @@ class _ProformaDetailsSheet extends StatelessWidget {
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text(tenant?['company_name'] ?? 'Company Name', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                        pw.Text(
+                          tenant?['company_name'] ?? 'Company Name',
+                          style: pw.TextStyle(
+                            fontSize: 24,
+                            fontWeight: pw.FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
                         pw.SizedBox(height: 4),
-                        if (tenant?['address'] != null) pw.Text(tenant!['address']),
+                        if (tenant?['address'] != null)
+                          pw.Text(tenant!['address']),
                         if (tenant?['phone'] != null) pw.Text(tenant!['phone']),
                         if (tenant?['email'] != null) pw.Text(tenant!['email']),
                       ],
@@ -645,10 +803,20 @@ class _ProformaDetailsSheet extends StatelessWidget {
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
-                        pw.Text('PROFORMA INVOICE', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                        pw.Text(
+                          'PROFORMA INVOICE',
+                          style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
                         pw.SizedBox(height: 4),
-                        pw.Text('Date: ${DateFormat('MMM d, yyyy').format(createdAt)}'),
-                        pw.Text('Time: ${DateFormat('h:mm a').format(createdAt)}'),
+                        pw.Text(
+                          'Date: ${DateFormat('MMM d, yyyy').format(createdAt)}',
+                        ),
+                        pw.Text(
+                          'Time: ${DateFormat('h:mm a').format(createdAt)}',
+                        ),
                       ],
                     ),
                   ],
@@ -657,62 +825,164 @@ class _ProformaDetailsSheet extends StatelessWidget {
                 pw.Container(
                   width: double.infinity,
                   padding: const pw.EdgeInsets.all(12),
-                  decoration: pw.BoxDecoration(color: lightGrey, borderRadius: pw.BorderRadius.circular(8)),
+                  decoration: pw.BoxDecoration(
+                    color: lightGrey,
+                    borderRadius: pw.BorderRadius.circular(8),
+                  ),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('Bill To:', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                      pw.Text(
+                        'Bill To:',
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          color: PdfColors.grey700,
+                        ),
+                      ),
                       pw.SizedBox(height: 4),
-                      pw.Text(customerData['name'] ?? 'Walk-in Customer', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                      if (customerData['phone'] != null) pw.Text(customerData['phone']),
+                      pw.Text(
+                        customerData['name'] ?? 'Walk-in Customer',
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      if (customerData['phone'] != null)
+                        pw.Text(customerData['phone']),
                     ],
                   ),
                 ),
                 pw.SizedBox(height: 30),
                 pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  decoration: pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: primaryColor, width: 2))),
+                  padding: const pw.EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 4,
+                  ),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border(
+                      bottom: pw.BorderSide(color: primaryColor, width: 2),
+                    ),
+                  ),
                   child: pw.Row(
                     children: [
-                      pw.Expanded(flex: 4, child: pw.Text('Item Description', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-                      pw.Expanded(flex: 1, child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-                      pw.Expanded(flex: 2, child: pw.Text('Price', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-                      pw.Expanded(flex: 2, child: pw.Text('Total', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
+                      pw.Expanded(
+                        flex: 4,
+                        child: pw.Text(
+                          'Item Description',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Expanded(
+                        flex: 1,
+                        child: pw.Text(
+                          'Qty',
+                          textAlign: pw.TextAlign.center,
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Expanded(
+                        flex: 2,
+                        child: pw.Text(
+                          'Price',
+                          textAlign: pw.TextAlign.right,
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Expanded(
+                        flex: 2,
+                        child: pw.Text(
+                          'Total',
+                          textAlign: pw.TextAlign.right,
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 ...itemsData.map((item) {
                   return pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                    decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey200))),
+                    padding: const pw.EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 4,
+                    ),
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(
+                        bottom: pw.BorderSide(color: PdfColors.grey200),
+                      ),
+                    ),
                     child: pw.Row(
                       children: [
                         pw.Expanded(flex: 4, child: pw.Text(item['name'])),
-                        pw.Expanded(flex: 1, child: pw.Text(item['quantity'].toString(), textAlign: pw.TextAlign.center)),
-                        pw.Expanded(flex: 2, child: pw.Text(_currencyFormat.format(item['unit_price']), textAlign: pw.TextAlign.right)),
-                        pw.Expanded(flex: 2, child: pw.Text(_currencyFormat.format(item['subtotal']), textAlign: pw.TextAlign.right)),
+                        pw.Expanded(
+                          flex: 1,
+                          child: pw.Text(
+                            item['quantity'].toString(),
+                            textAlign: pw.TextAlign.center,
+                          ),
+                        ),
+                        pw.Expanded(
+                          flex: 2,
+                          child: pw.Text(
+                            _currencyFormat.format(item['unit_price']),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                        ),
+                        pw.Expanded(
+                          flex: 2,
+                          child: pw.Text(
+                            _currencyFormat.format(item['subtotal']),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                        ),
                       ],
                     ),
                   );
-                }).toList(),
+                }),
                 pw.SizedBox(height: 20),
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.end,
                   children: [
-                    pw.Text('Total Amount: ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    pw.Text(_currencyFormat.format(totalAmount), style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16, color: primaryColor)),
+                    pw.Text(
+                      'Total Amount: ',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.Text(
+                      _currencyFormat.format(totalAmount),
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 16,
+                        color: primaryColor,
+                      ),
+                    ),
                   ],
                 ),
                 if (note != null && note.isNotEmpty) ...[
                   pw.SizedBox(height: 30),
-                  pw.Text('Notes:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  pw.Text(
+                    'Notes:',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  ),
                   pw.SizedBox(height: 4),
-                  pw.Text(note, style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                  pw.Text(
+                    note,
+                    style: const pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                    ),
+                  ),
                 ],
                 pw.Spacer(),
                 pw.Divider(color: PdfColors.grey300),
                 pw.SizedBox(height: 10),
-                pw.Center(child: pw.Text('This is a proforma invoice and not a valid tax invoice.', style: const pw.TextStyle(color: PdfColors.grey500, fontSize: 10))),
+                pw.Center(
+                  child: pw.Text(
+                    'This is a proforma invoice and not a valid tax invoice.',
+                    style: const pw.TextStyle(
+                      color: PdfColors.grey500,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
               ],
             );
           },
@@ -720,10 +990,18 @@ class _ProformaDetailsSheet extends StatelessWidget {
       );
 
       Navigator.pop(context);
-      await Printing.layoutPdf(onLayout: (format) async => doc.save(), name: 'Proforma_${DateFormat('yyyyMMdd_HHmm').format(createdAt)}');
+      await Printing.layoutPdf(
+        onLayout: (format) async => doc.save(),
+        name: 'Proforma_${DateFormat('yyyyMMdd_HHmm').format(createdAt)}',
+      );
     } catch (e) {
       if (Navigator.canPop(context)) Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error generating PDF: $e'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating PDF: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

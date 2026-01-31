@@ -386,8 +386,9 @@ class _EditProductPageState extends State<EditProductPage> {
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       final cleaned = value?.replaceAll(',', '');
-                      if (cleaned == null || cleaned.isEmpty)
+                      if (cleaned == null || cleaned.isEmpty) {
                         return 'Selling price required';
+                      }
                       if (double.tryParse(cleaned) == null ||
                           double.tryParse(cleaned)! <= 0) {
                         return 'Enter a valid price > 0';

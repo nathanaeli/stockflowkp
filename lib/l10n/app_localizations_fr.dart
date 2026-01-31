@@ -379,6 +379,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get emailInvoice => 'Envoyer la Facture par Email';
 
   @override
+  String get shareInvoice => 'Share Invoice';
+
+  @override
+  String get shareViaWhatsApp => 'Share via WhatsApp';
+
+  @override
   String get paid => 'PAYÉ';
 
   @override

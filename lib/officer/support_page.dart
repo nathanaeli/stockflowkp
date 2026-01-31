@@ -38,11 +38,15 @@ class SupportPage extends StatelessWidget {
               gradient: RadialGradient(
                 center: Alignment.topLeft,
                 radius: 1.5,
-                colors: [Color(0xFF1E4976), Color(0xFF0A1B32), Color(0xFF020B18)],
+                colors: [
+                  Color(0xFF1E4976),
+                  Color(0xFF0A1B32),
+                  Color(0xFF020B18),
+                ],
               ),
             ),
           ),
-          
+
           SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -63,14 +67,18 @@ class SupportPage extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: Colors.white.withOpacity(0.12)),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.12),
+                                ),
                               ),
                               child: Column(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF4BB4FF).withOpacity(0.2),
+                                      color: const Color(
+                                        0xFF4BB4FF,
+                                      ).withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: const Icon(
@@ -138,7 +146,11 @@ class SupportPage extends StatelessWidget {
                           "Call us for immediate assistance",
                           "0622080947",
                           Icons.arrow_forward_ios,
-                          () => _showContactOptions(context, 'phone', '+255 622 080 947'),
+                          () => _showContactOptions(
+                            context,
+                            'phone',
+                            '+255 622 080 947',
+                          ),
                         ),
                         _buildSupportOptionCard(
                           Icons.email_outlined,
@@ -146,7 +158,11 @@ class SupportPage extends StatelessWidget {
                           "Send us detailed questions",
                           "info@stockflowkp.online",
                           Icons.arrow_forward_ios,
-                          () => _showContactOptions(context, 'email', 'info@stockflowkp.online'),
+                          () => _showContactOptions(
+                            context,
+                            'email',
+                            'info@stockflowkp.online',
+                          ),
                         ),
                         _buildSupportOptionCard(
                           Icons.location_on_outlined,
@@ -154,7 +170,11 @@ class SupportPage extends StatelessWidget {
                           "Come see us in person",
                           "Dodoma, Tanzania",
                           Icons.arrow_forward_ios,
-                          () => _showContactOptions(context, 'location', 'Dodoma, Tanzania'),
+                          () => _showContactOptions(
+                            context,
+                            'location',
+                            'Dodoma, Tanzania',
+                          ),
                         ),
                       ],
                     ),
@@ -264,21 +284,30 @@ class SupportPage extends StatelessWidget {
                   Icons.email,
                   "Email",
                   "info@stockflowkp.online",
-                  () => _showContactOptions(context, 'email', 'info@stockflowkp.online'),
+                  () => _showContactOptions(
+                    context,
+                    'email',
+                    'info@stockflowkp.online',
+                  ),
                 ),
                 const Divider(color: Colors.white12, height: 1),
                 _buildContactRow(
                   Icons.phone,
                   "Phone",
                   "+255 622 080 947",
-                  () => _showContactOptions(context, 'phone', '+255 622 080 947'),
+                  () =>
+                      _showContactOptions(context, 'phone', '+255 622 080 947'),
                 ),
                 const Divider(color: Colors.white12, height: 1),
                 _buildContactRow(
                   Icons.location_on,
                   "Location",
                   "Dodoma, Tanzania",
-                  () => _showContactOptions(context, 'location', 'Dodoma, Tanzania'),
+                  () => _showContactOptions(
+                    context,
+                    'location',
+                    'Dodoma, Tanzania',
+                  ),
                 ),
               ],
             ),
@@ -288,7 +317,12 @@ class SupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactRow(IconData icon, String label, String value, VoidCallback onTap) {
+  Widget _buildContactRow(
+    IconData icon,
+    String label,
+    String value,
+    VoidCallback onTap,
+  ) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF4BB4FF), size: 24),
       title: Text(
@@ -307,12 +341,23 @@ class SupportPage extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white54,
+        size: 16,
+      ),
       onTap: onTap,
     );
   }
 
-  Widget _buildSupportOptionCard(IconData icon, String title, String subtitle, String value, IconData trailing, VoidCallback onTap) {
+  Widget _buildSupportOptionCard(
+    IconData icon,
+    String title,
+    String subtitle,
+    String value,
+    IconData trailing,
+    VoidCallback onTap,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
@@ -359,7 +404,12 @@ class SupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(IconData icon, String title, String description, Color accentColor) {
+  Widget _buildInfoCard(
+    IconData icon,
+    String title,
+    String description,
+    Color accentColor,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
@@ -443,6 +493,8 @@ class SupportPage extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              iconColor: Colors.white54,
+              collapsedIconColor: Colors.white54,
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -457,8 +509,6 @@ class SupportPage extends StatelessWidget {
                   ),
                 ),
               ],
-              iconColor: Colors.white54,
-              collapsedIconColor: Colors.white54,
             ),
           ),
         ),
@@ -482,75 +532,107 @@ class SupportPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF020B18).withOpacity(0.95),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Contact Options',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+      builder:
+          (context) => ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF020B18).withOpacity(0.95),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
                   ),
-                  const SizedBox(height: 20),
-                  if (type == 'phone')
-                    ListTile(
-                      leading: const Icon(Icons.phone, color: Color(0xFF4BB4FF)),
-                      title: Text('Call $value', style: GoogleFonts.plusJakartaSans(color: Colors.white)),
-                      subtitle: const Text('Direct phone call'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _copyToClipboard(context, value);
-                      },
-                    ),
-                  if (type == 'email')
-                    ListTile(
-                      leading: const Icon(Icons.email, color: Color(0xFF4BB4FF)),
-                      title: Text('Email $value', style: GoogleFonts.plusJakartaSans(color: Colors.white)),
-                      subtitle: const Text('Send email message'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _copyToClipboard(context, value);
-                      },
-                    ),
-                  if (type == 'location')
-                    ListTile(
-                      leading: const Icon(Icons.location_on, color: Color(0xFF4BB4FF)),
-                      title: Text('Location: $value', style: GoogleFonts.plusJakartaSans(color: Colors.white)),
-                      subtitle: const Text('View on map'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _copyToClipboard(context, value);
-                      },
-                    ),
-                  const SizedBox(height: 10),
-                  ListTile(
-                    leading: const Icon(Icons.copy, color: Colors.white70),
-                    title: Text('Copy $value', style: GoogleFonts.plusJakartaSans(color: Colors.white70)),
-                    subtitle: const Text('Copy to clipboard'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _copyToClipboard(context, value);
-                    },
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Contact Options',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (type == 'phone')
+                        ListTile(
+                          leading: const Icon(
+                            Icons.phone,
+                            color: Color(0xFF4BB4FF),
+                          ),
+                          title: Text(
+                            'Call $value',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                            ),
+                          ),
+                          subtitle: const Text('Direct phone call'),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _copyToClipboard(context, value);
+                          },
+                        ),
+                      if (type == 'email')
+                        ListTile(
+                          leading: const Icon(
+                            Icons.email,
+                            color: Color(0xFF4BB4FF),
+                          ),
+                          title: Text(
+                            'Email $value',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                            ),
+                          ),
+                          subtitle: const Text('Send email message'),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _copyToClipboard(context, value);
+                          },
+                        ),
+                      if (type == 'location')
+                        ListTile(
+                          leading: const Icon(
+                            Icons.location_on,
+                            color: Color(0xFF4BB4FF),
+                          ),
+                          title: Text(
+                            'Location: $value',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                            ),
+                          ),
+                          subtitle: const Text('View on map'),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _copyToClipboard(context, value);
+                          },
+                        ),
+                      const SizedBox(height: 10),
+                      ListTile(
+                        leading: const Icon(Icons.copy, color: Colors.white70),
+                        title: Text(
+                          'Copy $value',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white70,
+                          ),
+                        ),
+                        subtitle: const Text('Copy to clipboard'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _copyToClipboard(context, value);
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -558,15 +640,21 @@ class SupportPage extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
-      ),
+      builder:
+          (context) => const Center(
+            child: CircularProgressIndicator(color: Color(0xFF4BB4FF)),
+          ),
     );
 
     try {
       final byteData = await rootBundle.load('assets/manue.pdf');
       final file = File('${(await getTemporaryDirectory()).path}/manue.pdf');
-      await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+      await file.writeAsBytes(
+        byteData.buffer.asUint8List(
+          byteData.offsetInBytes,
+          byteData.lengthInBytes,
+        ),
+      );
 
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
@@ -577,7 +665,9 @@ class SupportPage extends StatelessWidget {
         Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Unable to open manual. Please ensure assets/manue.pdf exists.'),
+            content: Text(
+              'Unable to open manual. Please ensure assets/manue.pdf exists.',
+            ),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -596,7 +686,10 @@ class SupportPage extends StatelessWidget {
       }
 
       final byteData = await rootBundle.load('assets/manue.pdf');
-      final buffer = byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes);
+      final buffer = byteData.buffer.asUint8List(
+        byteData.offsetInBytes,
+        byteData.lengthInBytes,
+      );
 
       String filePath;
       if (Platform.isAndroid) {

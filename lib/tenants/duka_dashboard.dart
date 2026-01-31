@@ -55,14 +55,7 @@ class _DukaDashboardState extends State<DukaDashboard> {
             color: Colors.white,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white),
-            onPressed: () {
-              // Settings for this specific shop
-            },
-          ),
-        ],
+        actions: const [],
       ),
       drawer: _buildGlassDrawer(context),
       body: Stack(
@@ -123,13 +116,6 @@ class _DukaDashboardState extends State<DukaDashboard> {
         return DukaProductsPage(dukaId: duka['id'], dukaName: duka['name']);
       case 2:
         return SalesPage(dukaId: duka['id']);
-      case 3:
-        return Center(
-          child: Text(
-            "Settings Coming Soon",
-            style: GoogleFonts.plusJakartaSans(color: Colors.white70),
-          ),
-        );
       default:
         return _buildOverview(duka, l10n, todaySales, todayProfit, stats);
     }
@@ -303,15 +289,15 @@ class _DukaDashboardState extends State<DukaDashboard> {
             mainAxisSpacing: 12,
             children: [
               _buildActionCard(
+                'Back to Main',
+                Icons.dashboard_customize_outlined,
+                Colors.orangeAccent,
+                () => Navigator.pop(context),
+              ),
+              _buildActionCard(
                 l10n.viewFullReport,
                 Icons.analytics_outlined,
                 Colors.blueAccent,
-                () {},
-              ),
-              _buildActionCard(
-                l10n.shopSettings,
-                Icons.settings_suggest_outlined,
-                Colors.tealAccent,
                 () {},
               ),
             ],
@@ -373,22 +359,36 @@ class _DukaDashboardState extends State<DukaDashboard> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: Colors.white,
+                  Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                    title: Text(
-                      'Back to Dashboard',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                    decoration: BoxDecoration(
+                      color: Colors.orangeAccent.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.orangeAccent.withOpacity(0.3),
                       ),
                     ),
-                    onTap: () {
-                      Navigator.pop(context); // Close Drawer
-                      Navigator.pop(context); // Go back to TenantDashboard
-                    },
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.dashboard_customize_rounded,
+                        color: Colors.orangeAccent,
+                      ),
+                      title: Text(
+                        'Main Dashboard',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context); // Close Drawer
+                        Navigator.pop(context); // Go back to TenantDashboard
+                      },
+                    ),
                   ),
                   const Divider(color: Colors.white12),
                   _drawerItem(
@@ -413,14 +413,6 @@ class _DukaDashboardState extends State<DukaDashboard> {
                     onTap: () {
                       Navigator.pop(context);
                       setState(() => _selectedIndex = 2);
-                    },
-                  ),
-                  _drawerItem(
-                    Icons.settings_outlined,
-                    'Shop Settings',
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() => _selectedIndex = 3);
                     },
                   ),
                 ],
@@ -472,10 +464,24 @@ class _DukaDashboardState extends State<DukaDashboard> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  behavior: HitTestBehavior.translucent,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    child: const Icon(
+                      Icons.dashboard_customize_rounded,
+                      color: Colors.orangeAccent,
+                      size: 20,
+                    ),
+                  ),
+                ),
                 _navItem(Icons.dashboard_rounded, 'Overview', 0),
                 _navItem(Icons.inventory_2_rounded, 'Products', 1),
                 _navItem(Icons.receipt_long_rounded, 'Sales', 2),
-                _navItem(Icons.settings_outlined, 'Settings', 3),
               ],
             ),
           ),

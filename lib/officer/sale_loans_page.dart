@@ -20,7 +20,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
   List<Map<String, dynamic>> _filteredLoans = [];
   bool _isLoading = true;
   String _searchQuery = '';
-  String _filterStatus = 'all'; // all, pending, paid, overdue
+  final String _filterStatus = 'all'; // all, pending, paid, overdue
   int _selectedIndex = 1;
   bool _isRecordingPayment = false;
 
@@ -152,7 +152,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
   double _calculatePaymentPercentage(Map<String, dynamic> loan) {
     final total = (loan['total_amount'] as num?)?.toDouble() ?? 0.0;
     final paid = (loan['total_payments'] as num?)?.toDouble() ?? 0.0;
-    
+
     if (total <= 0) return 0.0;
     return (paid / total) * 100;
   }
@@ -411,7 +411,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                                   'Payment Status',
                                   loan['payment_status'] ?? 'N/A',
                                 ),
-                                
+
                                 // Loan History Button
                                 const SizedBox(height: 16),
                                 InkWell(
@@ -419,10 +419,14 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                                   child: Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF4BB4FF).withOpacity(0.1),
+                                      color: const Color(
+                                        0xFF4BB4FF,
+                                      ).withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: const Color(0xFF4BB4FF).withOpacity(0.3),
+                                        color: const Color(
+                                          0xFF4BB4FF,
+                                        ).withOpacity(0.3),
                                       ),
                                     ),
                                     child: Row(
@@ -560,7 +564,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
   Future<void> _showLoanHistory(Map<String, dynamic> loan) async {
     final db = await DatabaseService().database;
     final loanServerId = loan['server_id'] as int?;
-    
+
     if (loanServerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -570,7 +574,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
       );
       return;
     }
-    
+
     try {
       // Get payment history from local database
       final payments = await db.query(
@@ -579,419 +583,526 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
         whereArgs: [loanServerId],
         orderBy: 'payment_date DESC',
       );
-      
+
       if (!mounted) return;
-      
+
       await showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => DraggableScrollableSheet(
-          initialChildSize: 0.8,
-          minChildSize: 0.6,
-          maxChildSize: 0.95,
-          builder: (context, scrollController) => Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A1B32).withOpacity(0.95),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              child: Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(vertical: 12),
-                    height: 4,
-                    width: 40,
+        builder:
+            (context) => DraggableScrollableSheet(
+              initialChildSize: 0.8,
+              minChildSize: 0.6,
+              maxChildSize: 0.95,
+              builder:
+                  (context, scrollController) => Container(
                     decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.history_rounded,
-                          color: const Color(0xFF4BB4FF),
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Payment History',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF4BB4FF).withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      '${payments.length} payment${payments.length != 1 ? 's' : ''}',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: const Color(0xFF4BB4FF),
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                loan['customer_name'] ?? 'Unknown Customer',
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                      color: const Color(0xFF0A1B32).withOpacity(0.95),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                      border: Border(
+                        top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 20,
                         ),
                       ],
                     ),
-                  ),
-                  // Summary Section
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4BB4FF).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF4BB4FF).withOpacity(0.2)),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Total Paid',
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _formatCurrency(loan['total_payments'] ?? 0.0),
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.green,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 12),
+                            height: 4,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white24,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: Colors.white.withOpacity(0.2),
-                        ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Remaining',
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _formatCurrency(loan['remaining_balance'] ?? 0.0),
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: (loan['remaining_balance'] ?? 0.0) > 0
-                                      ? Colors.orange
-                                      : Colors.green,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  Expanded(
-                    child: payments.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            child: Row(
                               children: [
                                 Icon(
-                                  Icons.receipt_long_outlined,
-                                  size: 64,
-                                  color: Colors.white24,
+                                  Icons.history_rounded,
+                                  color: const Color(0xFF4BB4FF),
+                                  size: 24,
                                 ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No payment history found',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.white54,
-                                    fontSize: 14,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Payment History',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(
+                                                0xFF4BB4FF,
+                                              ).withOpacity(0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              '${payments.length} payment${payments.length != 1 ? 's' : ''}',
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                    color: const Color(
+                                                      0xFF4BB4FF,
+                                                    ),
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        loan['customer_name'] ??
+                                            'Unknown Customer',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'This loan has no recorded payments yet.',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.white38,
-                                    fontSize: 12,
+                                IconButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                    color: Colors.white70,
                                   ),
                                 ),
                               ],
                             ),
-                          )
-                        : ListView.builder(
-                            controller: scrollController,
-                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                            itemCount: payments.length,
-                            itemBuilder: (context, index) {
-                              final payment = payments[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          _formatCurrency(payment['amount'] as double? ?? 0.0),
-                                          style: GoogleFonts.plusJakartaSans(
-                                            color: Colors.green,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                          ),
+                          // Summary Section
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4BB4FF).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF4BB4FF).withOpacity(0.2),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Total Paid',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white70,
+                                          fontSize: 11,
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _formatCurrency(
+                                          loan['total_payments'] ?? 0.0,
+                                        ),
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.green,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: Colors.white.withOpacity(0.2),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'Remaining',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white70,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _formatCurrency(
+                                          loan['remaining_balance'] ?? 0.0,
+                                        ),
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color:
+                                              (loan['remaining_balance'] ??
+                                                          0.0) >
+                                                      0
+                                                  ? Colors.orange
+                                                  : Colors.green,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Expanded(
+                            child:
+                                payments.isEmpty
+                                    ? Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.receipt_long_outlined,
+                                            size: 64,
+                                            color: Colors.white24,
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF4BB4FF).withOpacity(0.2),
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: Text(
-                                            _formatDate(payment['payment_date'] as String?),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            'No payment history found',
                                             style: GoogleFonts.plusJakartaSans(
-                                              color: const Color(0xFF4BB4FF),
-                                              fontSize: 10,
+                                              color: Colors.white54,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'This loan has no recorded payments yet.',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color: Colors.white38,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                    : ListView.builder(
+                                      controller: scrollController,
+                                      padding: const EdgeInsets.fromLTRB(
+                                        24,
+                                        0,
+                                        24,
+                                        24,
+                                      ),
+                                      itemCount: payments.length,
+                                      itemBuilder: (context, index) {
+                                        final payment = payments[index];
+                                        return Container(
+                                          margin: const EdgeInsets.only(
+                                            bottom: 12,
+                                          ),
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(
+                                              0.05,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(
+                                                0.1,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    _formatCurrency(
+                                                      payment['amount']
+                                                              as double? ??
+                                                          0.0,
+                                                    ),
+                                                    style:
+                                                        GoogleFonts.plusJakartaSans(
+                                                          color: Colors.green,
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                  ),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 4,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                        0xFF4BB4FF,
+                                                      ).withOpacity(0.2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            6,
+                                                          ),
+                                                    ),
+                                                    child: Text(
+                                                      _formatDate(
+                                                        payment['payment_date']
+                                                            as String?,
+                                                      ),
+                                                      style:
+                                                          GoogleFonts.plusJakartaSans(
+                                                            color: const Color(
+                                                              0xFF4BB4FF,
+                                                            ),
+                                                            fontSize: 10,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              if (payment['notes'] != null &&
+                                                  (payment['notes'] as String)
+                                                      .isNotEmpty) ...[
+                                                const SizedBox(height: 8),
+                                                Container(
+                                                  padding: const EdgeInsets.all(
+                                                    8,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black
+                                                        .withOpacity(0.2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          6,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    payment['notes'] as String,
+                                                    style:
+                                                        GoogleFonts.plusJakartaSans(
+                                                          color: Colors.white70,
+                                                          fontSize: 12,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ],
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.access_time_rounded,
+                                                    size: 12,
+                                                    color: Colors.white38,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    'Recorded: ${_formatDateTime(payment['created_at'] as String?)}',
+                                                    style:
+                                                        GoogleFonts.plusJakartaSans(
+                                                          color: Colors.white38,
+                                                          fontSize: 10,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                          ),
+
+                          // Payment Summary Section
+                          if (payments.isNotEmpty) ...[
+                            Container(
+                              margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.analytics_rounded,
+                                        color: const Color(0xFF4BB4FF),
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Payment Summary',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildSummaryItem(
+                                          'Total Payments',
+                                          '${payments.length}',
+                                          Icons.payment_rounded,
+                                          const Color(0xFF4BB4FF),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSummaryItem(
+                                          'Total Paid',
+                                          _formatCurrency(
+                                            loan['total_payments'] ?? 0.0,
+                                          ),
+                                          Icons.attach_money_rounded,
+                                          Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          _calculatePaymentPercentage(loan) >=
+                                                  100
+                                              ? Colors.green.withOpacity(0.1)
+                                              : const Color(
+                                                0xFF4BB4FF,
+                                              ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color:
+                                            _calculatePaymentPercentage(loan) >=
+                                                    100
+                                                ? Colors.green.withOpacity(0.2)
+                                                : const Color(
+                                                  0xFF4BB4FF,
+                                                ).withOpacity(0.2),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          _calculatePaymentPercentage(loan) >=
+                                                  100
+                                              ? Icons.check_circle_rounded
+                                              : Icons.trending_up_rounded,
+                                          color:
+                                              _calculatePaymentPercentage(
+                                                        loan,
+                                                      ) >=
+                                                      100
+                                                  ? Colors.green
+                                                  : const Color(0xFF4BB4FF),
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            _calculatePaymentPercentage(loan) >=
+                                                    100
+                                                ? 'Loan Fully Paid'
+                                                : 'Payment Progress: ${_calculatePaymentPercentage(loan).toStringAsFixed(1)}%',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color:
+                                                  _calculatePaymentPercentage(
+                                                            loan,
+                                                          ) >=
+                                                          100
+                                                      ? Colors.green
+                                                      : const Color(0xFF4BB4FF),
+                                              fontSize: 11,
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    if (payment['notes'] != null &&
-                                        (payment['notes'] as String).isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          payment['notes'] as String,
-                                          style: GoogleFonts.plusJakartaSans(
-                                            color: Colors.white70,
-                                              fontSize: 12,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildSummaryItem(
+                                          'Average Payment',
+                                          _formatCurrency(
+                                            _calculateAveragePayment(payments),
                                           ),
+                                          Icons.trending_up_rounded,
+                                          Colors.orange,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSummaryItem(
+                                          'Last Payment',
+                                          payments.isNotEmpty
+                                              ? _formatDate(
+                                                payments.first['payment_date']
+                                                    as String?,
+                                              )
+                                              : 'N/A',
+                                          Icons.access_time_rounded,
+                                          Colors.purple,
                                         ),
                                       ),
                                     ],
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.access_time_rounded,
-                                          size: 12,
-                                          color: Colors.white38,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Recorded: ${_formatDateTime(payment['created_at'] as String?)}',
-                                          style: GoogleFonts.plusJakartaSans(
-                                            color: Colors.white38,
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                  
-                  // Payment Summary Section
-                  if (payments.isNotEmpty) ...[
-                    Container(
-                      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withOpacity(0.1)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.analytics_rounded,
-                                color: const Color(0xFF4BB4FF),
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Payment Summary',
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildSummaryItem(
-                                  'Total Payments',
-                                  '${payments.length}',
-                                  Icons.payment_rounded,
-                                  const Color(0xFF4BB4FF),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSummaryItem(
-                                  'Total Paid',
-                                  _formatCurrency(loan['total_payments'] ?? 0.0),
-                                  Icons.attach_money_rounded,
-                                  Colors.green,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: _calculatePaymentPercentage(loan) >= 100
-                                  ? Colors.green.withOpacity(0.1)
-                                  : const Color(0xFF4BB4FF).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: _calculatePaymentPercentage(loan) >= 100
-                                    ? Colors.green.withOpacity(0.2)
-                                    : const Color(0xFF4BB4FF).withOpacity(0.2),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _calculatePaymentPercentage(loan) >= 100
-                                      ? Icons.check_circle_rounded
-                                      : Icons.trending_up_rounded,
-                                  color: _calculatePaymentPercentage(loan) >= 100
-                                      ? Colors.green
-                                      : const Color(0xFF4BB4FF),
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _calculatePaymentPercentage(loan) >= 100
-                                        ? 'Loan Fully Paid'
-                                        : 'Payment Progress: ${_calculatePaymentPercentage(loan).toStringAsFixed(1)}%',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: _calculatePaymentPercentage(loan) >= 100
-                                          ? Colors.green
-                                          : const Color(0xFF4BB4FF),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildSummaryItem(
-                                  'Average Payment',
-                                  _formatCurrency(_calculateAveragePayment(payments)),
-                                  Icons.trending_up_rounded,
-                                  Colors.orange,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSummaryItem(
-                                  'Last Payment',
-                                  payments.isNotEmpty
-                                      ? _formatDate(payments.first['payment_date'] as String?)
-                                      : 'N/A',
-                                  Icons.access_time_rounded,
-                                  Colors.purple,
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ],
                       ),
                     ),
-                  ],
-                ],
-              ),
+                  ),
             ),
-          ),
-        ),
       );
     } catch (e) {
       if (mounted) {
@@ -1015,7 +1126,12 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
     }
   }
 
-  Widget _buildSummaryItem(String label, String value, IconData icon, Color color) {
+  Widget _buildSummaryItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1028,11 +1144,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: color,
-                size: 16,
-              ),
+              Icon(icon, color: color, size: 16),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -1066,12 +1178,12 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
 
   double _calculateAveragePayment(List<Map<String, dynamic>> payments) {
     if (payments.isEmpty) return 0.0;
-    
+
     double total = 0.0;
     for (var payment in payments) {
       total += (payment['amount'] as num?)?.toDouble() ?? 0.0;
     }
-    
+
     return total / payments.length;
   }
 
@@ -1086,13 +1198,26 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
 
     // Calculate percentages
     final totalAmount = (loan['total_amount'] as num?)?.toDouble() ?? 0.0;
-    final remainingBalance = (loan['remaining_balance'] as num?)?.toDouble() ?? 0.0;
+    final remainingBalance =
+        (loan['remaining_balance'] as num?)?.toDouble() ?? 0.0;
 
     // Quick payment percentages
     final quickPayments = [
-      {'label': '25%', 'amount': (totalAmount * 0.25).round(), 'percentage': 0.25},
-      {'label': '50%', 'amount': (totalAmount * 0.50).round(), 'percentage': 0.50},
-      {'label': '75%', 'amount': (totalAmount * 0.75).round(), 'percentage': 0.75},
+      {
+        'label': '25%',
+        'amount': (totalAmount * 0.25).round(),
+        'percentage': 0.25,
+      },
+      {
+        'label': '50%',
+        'amount': (totalAmount * 0.50).round(),
+        'percentage': 0.50,
+      },
+      {
+        'label': '75%',
+        'amount': (totalAmount * 0.75).round(),
+        'percentage': 0.75,
+      },
       {'label': '100%', 'amount': totalAmount.round(), 'percentage': 1.0},
     ];
 
@@ -1122,7 +1247,10 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                   children: [
                     Text(
                       'Customer: ${loan['customer_name']}',
-                      style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 12),
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     // Quick Payment Buttons
@@ -1141,41 +1269,46 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: quickPayments.map((payment) {
-                            final amount = payment['amount'] as int;
-                            if (amount > remainingBalance) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return GestureDetector(
-                              onTap: () {
-                                if (dialogContext.mounted) {
-                                  amountController.text = amount.toString();
+                          children:
+                              quickPayments.map((payment) {
+                                final amount = payment['amount'] as int;
+                                if (amount > remainingBalance) {
+                                  return const SizedBox.shrink();
                                 }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4BB4FF).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: const Color(0xFF4BB4FF).withOpacity(0.3),
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    if (dialogContext.mounted) {
+                                      amountController.text = amount.toString();
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF4BB4FF,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: const Color(
+                                          0xFF4BB4FF,
+                                        ).withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '${payment['label']} (${_formatCurrency(amount.toDouble())})',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: const Color(0xFF4BB4FF),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                child: Text(
-                                  '${payment['label']} (${_formatCurrency(amount.toDouble())})',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: const Color(0xFF4BB4FF),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                                );
+                              }).toList(),
                         ),
                       ],
                     ),
@@ -1202,7 +1335,9 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF4BB4FF)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4BB4FF),
+                          ),
                         ),
                       ),
                     ),
@@ -1226,7 +1361,9 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF4BB4FF)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4BB4FF),
+                          ),
                         ),
                       ),
                     ),
@@ -1237,13 +1374,17 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
             actions: [
               TextButton(
                 onPressed: () {
-                  if (dialogContext.mounted && Navigator.of(dialogContext).canPop()) {
+                  if (dialogContext.mounted &&
+                      Navigator.of(dialogContext).canPop()) {
                     Navigator.of(dialogContext).pop();
                   }
                 },
                 child: Text(
                   'Cancel',
-                  style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 13),
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white70,
+                    fontSize: 13,
+                  ),
                 ),
               ),
               ElevatedButton(
@@ -1272,11 +1413,11 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                     return;
                   }
 
-                  if (dialogContext.mounted && Navigator.of(dialogContext).canPop()) {
-                    Navigator.of(dialogContext).pop({
-                      'amount': amount.toString(),
-                      'note': noteText,
-                    });
+                  if (dialogContext.mounted &&
+                      Navigator.of(dialogContext).canPop()) {
+                    Navigator.of(
+                      dialogContext,
+                    ).pop({'amount': amount.toString(), 'note': noteText});
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -1383,20 +1524,24 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
 
           // Insert into loan_payments table with proper null handling
           if (responseData['loanPayment'] != null) {
-            final loanPayment = responseData['loanPayment'] as Map<String, dynamic>;
+            final loanPayment =
+                responseData['loanPayment'] as Map<String, dynamic>;
 
             // Prepare the record with proper null handling
             final paymentRecord = <String, dynamic>{
               'server_id': loanPayment['id'] as int?,
               'sale_server_id': loan['server_id'] as int?,
               'amount': amount,
-              'payment_date': loanPayment['payment_date'] as String? ??
+              'payment_date':
+                  loanPayment['payment_date'] as String? ??
                   DateTime.now().toIso8601String().split('T')[0],
               'notes': noteText.isNotEmpty ? noteText : null,
               'user_id': loanPayment['user_id'] as int?,
-              'created_at': loanPayment['created_at'] as String? ??
+              'created_at':
+                  loanPayment['created_at'] as String? ??
                   DateTime.now().toIso8601String(),
-              'updated_at': loanPayment['updated_at'] as String? ??
+              'updated_at':
+                  loanPayment['updated_at'] as String? ??
                   DateTime.now().toIso8601String(),
               'sync_status': 1, // Synced
             };
@@ -1407,7 +1552,8 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
             await db.insert('loan_payments', paymentRecord);
           }
 
-          final currentPaid = (loan['total_payments'] as num? ?? 0.0).toDouble() + amount;
+          final currentPaid =
+              (loan['total_payments'] as num? ?? 0.0).toDouble() + amount;
           final currentTotal = (loan['total_amount'] as num? ?? 0.0).toDouble();
           double remaining = currentTotal - currentPaid;
           if (remaining < 0) remaining = 0;
@@ -1427,7 +1573,9 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
           );
 
           // Close loading dialog
-          if (mounted && loadingContext != null && Navigator.of(loadingContext!).canPop()) {
+          if (mounted &&
+              loadingContext != null &&
+              Navigator.of(loadingContext!).canPop()) {
             Navigator.of(loadingContext!).pop();
           }
 
@@ -1446,17 +1594,16 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
         }
       } catch (e) {
         // Close loading dialog
-        if (mounted && loadingContext != null && Navigator.of(loadingContext!).canPop()) {
+        if (mounted &&
+            loadingContext != null &&
+            Navigator.of(loadingContext!).canPop()) {
           Navigator.of(loadingContext!).pop();
         }
 
         // Show error message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: $e'),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
           );
         }
       }
@@ -1464,10 +1611,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
       // Handle any unexpected errors
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -1773,7 +1917,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
           onTap: () => _showLoanDetails(loan),
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-              padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1848,9 +1992,10 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                           Text(
                             '${_calculatePaymentPercentage(loan).toStringAsFixed(1)}%',
                             style: GoogleFonts.plusJakartaSans(
-                              color: _calculatePaymentPercentage(loan) >= 100 
-                                  ? Colors.green 
-                                  : const Color(0xFF4BB4FF),
+                              color:
+                                  _calculatePaymentPercentage(loan) >= 100
+                                      ? Colors.green
+                                      : const Color(0xFF4BB4FF),
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1870,8 +2015,8 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                             value: _calculatePaymentPercentage(loan) / 100,
                             backgroundColor: Colors.transparent,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              _calculatePaymentPercentage(loan) >= 100 
-                                  ? Colors.green 
+                              _calculatePaymentPercentage(loan) >= 100
+                                  ? Colors.green
                                   : const Color(0xFF4BB4FF),
                             ),
                           ),
@@ -1880,7 +2025,7 @@ class _SaleLoansPageState extends State<SaleLoansPage> {
                     ],
                   ),
                 ),
-                
+
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(

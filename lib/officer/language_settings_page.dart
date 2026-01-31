@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:stockflowkp/l10n/app_localizations.dart';
 import 'package:stockflowkp/services/shared_preferences_service.dart';
 
 class LanguageSettingsPage extends StatefulWidget {
@@ -35,14 +34,16 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
       setState(() {
         _selectedLanguage = languageCode;
       });
-      
+
       // Show confirmation message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            languageCode == 'en' ? 'Language changed to English' : 
-            languageCode == 'sw' ? 'Lugha imebadilishwa kuwa Kiswahili' :
-            'Language changed to French',
+            languageCode == 'en'
+                ? 'Language changed to English'
+                : languageCode == 'sw'
+                ? 'Lugha imebadilishwa kuwa Kiswahili'
+                : 'Language changed to French',
           ),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
@@ -90,7 +91,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               _buildLanguageOption(
                 languageCode: 'en',
                 languageName: 'English',
@@ -99,7 +100,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
                 description: 'Default language',
               ),
               const SizedBox(height: 16),
-              
+
               _buildLanguageOption(
                 languageCode: 'sw',
                 languageName: 'Swahili',
@@ -108,7 +109,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
                 description: 'For East Africa region',
               ),
               const SizedBox(height: 16),
-              
+
               _buildLanguageOption(
                 languageCode: 'fr',
                 languageName: 'French',
@@ -131,30 +132,29 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
     String? description,
   }) {
     final isSelected = _selectedLanguage == languageCode;
-    
+
     return GestureDetector(
       onTap: () => _changeLanguage(languageCode),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected 
-            ? const Color(0xFF4BB4FF).withOpacity(0.2)
-            : Colors.white.withOpacity(0.05),
+          color:
+              isSelected
+                  ? const Color(0xFF4BB4FF).withOpacity(0.2)
+                  : Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected 
-              ? const Color(0xFF4BB4FF)
-              : Colors.white.withOpacity(0.1),
+            color:
+                isSelected
+                    ? const Color(0xFF4BB4FF)
+                    : Colors.white.withOpacity(0.1),
             width: 2,
           ),
         ),
         child: Row(
           children: [
-            Text(
-              flag,
-              style: const TextStyle(fontSize: 32),
-            ),
+            Text(flag, style: const TextStyle(fontSize: 32)),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -189,11 +189,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
               ),
             ),
             if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFF4BB4FF),
-                size: 24,
-              )
+              const Icon(Icons.check_circle, color: Color(0xFF4BB4FF), size: 24)
             else
               const Icon(
                 Icons.circle_outlined,

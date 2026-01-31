@@ -207,7 +207,9 @@ class _AddProductPageState extends State<AddProductPage> {
               surface: Color(0xFF0A1B32),
               onSurface: Colors.white,
             ),
-            dialogBackgroundColor: const Color(0xFF0A1B32),
+            dialogTheme: DialogThemeData(
+              backgroundColor: const Color(0xFF0A1B32),
+            ),
           ),
           child: child!,
         );
@@ -410,8 +412,9 @@ class _AddProductPageState extends State<AddProductPage> {
                       final cleaned = v?.replaceAll(',', '');
                       if (cleaned == null || cleaned.isEmpty) return 'Required';
                       final price = double.tryParse(cleaned);
-                      if (price == null || price <= 0)
+                      if (price == null || price <= 0) {
                         return 'Enter valid price > 0';
+                      }
                       return null;
                     },
                   ),

@@ -793,6 +793,18 @@ abstract class AppLocalizations {
   /// **'Email Invoice'**
   String get emailInvoice;
 
+  /// Share invoice button text
+  ///
+  /// In en, this message translates to:
+  /// **'Share Invoice'**
+  String get shareInvoice;
+
+  /// WhatsApp share button text
+  ///
+  /// In en, this message translates to:
+  /// **'Share via WhatsApp'**
+  String get shareViaWhatsApp;
+
   /// Paid status indicator
   ///
   /// In en, this message translates to:

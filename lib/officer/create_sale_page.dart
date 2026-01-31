@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:stockflowkp/services/database_service.dart';
 import 'package:stockflowkp/services/sync_service.dart';
+import 'package:lottie/lottie.dart';
 // import 'package:stockflowkp/utils/qr_scanner.dart';
 import 'package:stockflowkp/officer/checkout_page.dart';
 
@@ -885,13 +886,7 @@ class _CreateSalePageState extends State<CreateSalePage> {
 
       if (mounted) {
         if (widget.editSale == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Sale completed!'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          await _showSuccessDialog();
         }
 
         setState(() {
@@ -920,6 +915,99 @@ class _CreateSalePageState extends State<CreateSalePage> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _showSuccessDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0A1B32),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Lottie.network(
+                    'https://assets10.lottiefiles.com/packages/lf20_kz9pjc8q.json', // Success Checkmark
+                    width: 150,
+                    height: 150,
+                    repeat: false,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 20),
+                        padding: const EdgeInsets.all(16),
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 64,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Congratulations!',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Sale has been completed successfully.',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4BB4FF),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Awesome!',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
   }
 
   Future<void> _showQuickAddCustomerDialog() async {
@@ -1111,7 +1199,7 @@ class _CreateSalePageState extends State<CreateSalePage> {
                   ),
                 ),
                 child: Text(
-                  '${_totalItems} Items',
+                  '$_totalItems Items',
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF4BB4FF),
                     fontWeight: FontWeight.bold,
@@ -1809,20 +1897,23 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
       final serverId = product['server_id'] as int?;
       int bulkQty = 0;
       List<Map<String, dynamic>> stockList = [];
-      if (serverId != null)
+      if (serverId != null) {
         stockList = await db.query(
           'stocks',
           where: 'product_id = ?',
           whereArgs: [serverId],
         );
-      if (stockList.isEmpty)
+      }
+      if (stockList.isEmpty) {
         stockList = await db.query(
           'stocks',
           where: 'product_id = ?',
           whereArgs: [localId],
         );
-      if (stockList.isNotEmpty)
+      }
+      if (stockList.isNotEmpty) {
         bulkQty = stockList.first['quantity'] as int? ?? 0;
+      }
       final itemRes = await db.rawQuery(
         "SELECT COUNT(*) as count FROM product_items WHERE product_id = ? AND status = 'available'",
         [localId],
@@ -2030,7 +2121,10 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${NumberFormat('#,##0.00', 'en_US').format(product['selling_price'] ?? 0.0)}',
+                NumberFormat(
+                  '#,##0.00',
+                  'en_US',
+                ).format(product['selling_price'] ?? 0.0),
                 style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF4BB4FF),
                   fontWeight: FontWeight.bold,
