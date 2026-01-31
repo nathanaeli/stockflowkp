@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:stockflowkp/services/database_service.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.217.223:8000';
+  static const String baseUrl = 'https://stockflowkp.online/';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
