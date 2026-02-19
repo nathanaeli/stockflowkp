@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "SmartBiz",
+  "appTitle": "StockFlow KP",
   "@appTitle": {
     "description": "The title of the app displayed on the home screen"
   },
@@ -8,7 +8,7 @@
   "@subtitle": {
     "description": "The subtitle describing the app features"
   },
-  "enterButton": "Enter SmartBiz",
+  "enterButton": "Enter StockFlow KP",
   "@enterButton": {
     "description": "The text on the enter button"
   },

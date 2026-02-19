@@ -9,13 +9,13 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appTitle => 'SmartBiz';
+  String get appTitle => 'StockFlow KP';
 
   @override
   String get subtitle => 'Gérez votre entreprise comme un pro.\nVentes • Inventaire • Clients • Rapports';
 
   @override
-  String get enterButton => 'Entrer dans SmartBiz';
+  String get enterButton => 'Entrer dans StockFlow KP';
 
   @override
   String get email => 'Email';

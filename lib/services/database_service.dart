@@ -14,7 +14,7 @@ class DatabaseService {
   DatabaseService._internal();
 
   static Database? _database;
-  static const _databaseName = 'updatedinfo.db';
+  static const _databaseName = 'masangura.db';
   static const _databaseVersion = 36;
 
   // Sync Status Constants
@@ -1181,6 +1181,8 @@ class DatabaseService {
             json['stocks'] as List<dynamic>,
           );
         }
+
+        
         if (json.containsKey('sales') && json['sales'] is List) {
           // Use individual _smartUpsert for sales to handle schema differences
           for (var sale in json['sales'] as List) {

@@ -1,4 +1,4 @@
-package com.example.stockflowkp
+package com.petson.stockflowkp
 
 import io.flutter.embedding.android.FlutterActivity
 

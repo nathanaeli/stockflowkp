@@ -185,7 +185,7 @@ class _BarcodeGeneratorScreenState extends State<BarcodeGeneratorScreen> {
       // Save PDF to temporary directory
       final output = await getTemporaryDirectory();
       final file = File(
-        '${output.path}/smartbiz_barcodes_${DateTime.now().millisecondsSinceEpoch}.pdf',
+        '${output.path}/stockflowkp_barcodes_${DateTime.now().millisecondsSinceEpoch}.pdf',
       );
       await file.writeAsBytes(await pdf.save());
 

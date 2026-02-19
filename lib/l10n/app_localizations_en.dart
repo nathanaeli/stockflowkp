@@ -9,13 +9,13 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'SmartBiz';
+  String get appTitle => 'StockFlow KP';
 
   @override
   String get subtitle => 'Manage your business like a pro.\nSales • Inventory • Customers • Reports';
 
   @override
-  String get enterButton => 'Enter SmartBiz';
+  String get enterButton => 'Enter StockFlow KP';
 
   @override
   String get email => 'Email';

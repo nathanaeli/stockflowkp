@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:stockflowkp/services/database_service.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://stockflowkp.online/';
+  static const String baseUrl = 'https://stockflowkp.online';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
@@ -179,7 +179,9 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
+        print(response.body); // Debug: Print raw response
         return jsonDecode(response.body);
+
       } else {
         throw Exception(
           'Failed to fetch dashboard: ${response.statusCode} - ${response.body}',

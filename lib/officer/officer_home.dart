@@ -142,7 +142,7 @@ class _OfficerHomeState extends State<OfficerHome> {
         officerId,
         token,
       );
-      print(dashboardData['products']);
+     
       await DatabaseService().saveDashboardData(dashboardData);
 
       // Verify deletion and show alert if failed

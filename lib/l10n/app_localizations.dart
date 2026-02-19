@@ -100,7 +100,7 @@ abstract class AppLocalizations {
   /// The title of the app displayed on the home screen
   ///
   /// In en, this message translates to:
-  /// **'SmartBiz'**
+  /// **'StockFlow KP'**
   String get appTitle;
 
   /// The subtitle describing the app features
@@ -112,7 +112,7 @@ abstract class AppLocalizations {
   /// The text on the enter button
   ///
   /// In en, this message translates to:
-  /// **'Enter SmartBiz'**
+  /// **'Enter StockFlow KP'**
   String get enterButton;
 
   /// Label for email field
